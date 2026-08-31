@@ -26,12 +26,12 @@ export function useWebSocket(url, authToken) {
     setStatus('RECONNECTING');
     reconnectTimerRef.current = setTimeout(() => {
       if (!isUnmountedRef.current) {
-        connect();
+        connect(true);
       }
     }, 3000); // Tentar reconectar a cada 3 segundos
   }, [url, authToken]);
 
-  const connect = useCallback(() => {
+  const connect = useCallback((isRetry = false) => {
     clearReconnectTimer();
     
     if (wsRef.current) {
@@ -49,7 +49,9 @@ export function useWebSocket(url, authToken) {
 
     if (!url) return;
 
-    setStatus('CONNECTING');
+    if (!isRetry) {
+      setStatus('CONNECTING');
+    }
     setErrorMessage('');
 
     try {

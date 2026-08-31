@@ -1,7 +1,44 @@
-import React from 'react';
-import { Wifi, WifiOff, RefreshCw, Settings, ShieldCheck, ShieldAlert, Moon, Sun } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Wifi, WifiOff, RefreshCw, Settings, ShieldCheck, ShieldAlert, Moon, Sun, Maximize, Minimize } from 'lucide-react';
 
 export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          await el.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          await document.webkitExitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.warn('Tela cheia bloqueada ou não suportada:', err);
+    }
+  };
+
   const getStatusBadge = () => {
     switch (status) {
       case 'AUTHENTICATED':
@@ -57,6 +94,14 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
 
       <div className="header-actions">
         {getStatusBadge()}
+        <button 
+          className="btn-settings-icon" 
+          onClick={toggleFullscreen} 
+          title={isFullscreen ? "Sair da Tela Cheia" : "Tela Cheia Total (Ocultar HUD e Barras)"}
+          aria-label="Tela Cheia"
+        >
+          {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+        </button>
         <button 
           className="btn-settings-icon" 
           onClick={onToggleTheme} 

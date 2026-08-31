@@ -35,12 +35,30 @@ APPS_MAP: Dict[str, List[str]] = {
         os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs\Obsidian.lnk")
     ],
     "whatsapp": [
-        "explorer.exe",
         "whatsapp:"
     ],
     "shutdown_pc": [
         "shutdown", "/s", "/t", "0"
+    ],
+    "obs": [
+        os.path.expandvars(r"%PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs\OBS Studio.lnk")
+    ],
+    "blitz": [
+        os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs\Blitz.lnk")
     ]
+}
+
+APP_PROCESS_NAMES = {
+    "vscode": "code.exe",
+    "discord": "discord.exe",
+    "chrome": "chrome.exe",
+    "spotify": "spotify.exe",
+    "obsidian": "obsidian.exe",
+    "whatsapp": "whatsapp.exe",
+    "steam": "steam.exe",
+    "lol": "leagueclient.exe",
+    "obs": "obs64.exe",
+    "blitz": "blitz.exe"
 }
 
 # Códigos virtuais do Windows para Mídia e Volume
@@ -56,6 +74,69 @@ SYSTEM_KEYS = {
 def simulate_key(vk_code: int):
     ctypes.windll.user32.keybd_event(vk_code, 0, 0, 0)
     ctypes.windll.user32.keybd_event(vk_code, 0, 2, 0)
+
+def bring_to_foreground(exe_name: str) -> bool:
+    import psutil
+    try:
+        exe_name_lower = exe_name.lower()
+        target_pids = []
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                if proc.info['name'] and proc.info['name'].lower() == exe_name_lower:
+                    target_pids.append(proc.info['pid'])
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        
+        if not target_pids:
+            return False
+            
+        user32 = ctypes.windll.user32
+        WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p)
+        
+        SW_RESTORE = 9
+        GW_OWNER = 4
+        
+        found_hwnd = None
+        
+        def enum_windows_proc(hwnd, lParam):
+            nonlocal found_hwnd
+            # Has to be visible
+            if not user32.IsWindowVisible(hwnd):
+                return 1
+            # Should not have an owner
+            if user32.GetWindow(hwnd, GW_OWNER) != 0:
+                return 1
+            # Must have a title
+            length = user32.GetWindowTextLengthW(hwnd)
+            if length == 0:
+                return 1
+                
+            process_id = ctypes.c_ulong()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(process_id))
+            
+            if process_id.value in target_pids:
+                found_hwnd = hwnd
+                return 0 # Stop enumerating (0 means false in C, stops EnumWindows)
+            return 1 # Continue enumerating
+            
+        user32.EnumWindows(WNDENUMPROC(enum_windows_proc), 0)
+        
+        if found_hwnd:
+            if user32.IsIconic(found_hwnd):
+                user32.ShowWindow(found_hwnd, SW_RESTORE)
+            
+            # The SetForegroundWindow can fail if the current process doesn't have focus
+            # Trick to force focus: press and release ALT key
+            user32.keybd_event(0x12, 0, 0, 0)
+            user32.keybd_event(0x12, 0, 2, 0)
+            
+            user32.SetForegroundWindow(found_hwnd)
+            return True
+            
+        return False
+    except Exception as e:
+        logger.error(f"Erro ao focar {exe_name}: {e}")
+        return False
 
 def launch_app(app_key: str) -> bool:
     """
@@ -84,6 +165,12 @@ def launch_app(app_key: str) -> bool:
             return False
 
     # Fluxo normal para aplicativos
+    # Verifica se o aplicativo já está rodando e traz para frente
+    process_name = APP_PROCESS_NAMES.get(app_key)
+    if process_name and bring_to_foreground(process_name):
+        logger.info(f"Aplicativo já estava rodando, trazido para o primeiro plano: {app_key}")
+        return True
+
     command = APPS_MAP.get(app_key)
     if not command:
         logger.warning(f"Aplicativo '{app_key}' nao encontrado no mapeamento.")

@@ -1,4 +1,4 @@
-﻿
+
 **Backlog V1 (ConcluÃ­do)**
 - [x] Iniciar ambiente Python, instalar FastAPI e Uvicorn.
 - [x] Criar endpoint WebSocket com verificaÃ§Ã£o de Token.
@@ -58,8 +58,18 @@
 - [x] **Configuração do .gitignore:** Proteção de variáveis de ambiente (.env), binários do ambiente virtual (env/) e pacotes do Node (
 ode_modules/).
 - [x] **Documentação de Instalação:** README.md completo com guia de execução rápida (1 clique com VBS) e manual, arquitetura unificada e recursos de auto-descoberta mDNS.
-
 **Correções e Polimento (v1.0.1)**
 - [x] **Ícone do Obsidian:** Otimização do vetor SVG do Obsidian para carregamento inline instantâneo na grade de botões.
 - [x] **Estabilidade do OLED Blackout:** Correção do ciclo de reconexão do WebSocket para manter a tela 100% preta de forma contínua e sem piscar quando o PC for desligado.
 - [x] **Toque Duplo Mobile:** Adicionado detector de duplo toque para abrir configurações na tela de Blackout no smartphone.
+
+- [x] **Legendas e Nomes dos Apps:** Exibição dos nomes dos aplicativos abaixo de cada ícone em todas as orientações (Portrait e Landscape), com tipografia nítida e responsiva mantendo o padrão Glassmorphism/OLED.
+
+- [x] **Reorganização e Novos Apps:** Criação do atalho para o OBS Studio na tela inicial e transferência do botão de Desligar (Power) e Mutar Microfone para a categoria de Controle de Mídia (Página 2), com readequação total do CSS Grid para comportar os novos layouts.
+
+- [x] **Tipografia Moderna e Translúcida:** Aplicação da fonte **Plus Jakarta Sans / Outfit** com estilo translúcido refinado (gba(241, 245, 249, 0.70)) e sombras suaves para os nomes dos aplicativos abaixo dos ícones.
+
+- [x] **Foco de Janelas (Foreground):** Implementação na API Windows (`ctypes.windll.user32`) que procura processos rodando em segundo plano e automaticamente os traz para o primeiro plano (com simulação de tecla ALT para evitar bloqueios de foco), evitando que instâncias redundantes sejam abertas quando o usuário clica nos botões.
+
+**Backlog V7 (Pr�ximas Tarefas)**
+- [ ] **Redesign da Caixa de M�sica:** Alterar o design atual (Widget Now Playing) para um novo layout e experi�ncia visual.

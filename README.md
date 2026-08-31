@@ -1,6 +1,16 @@
-﻿# 📱 Stream Deck Mobile - App Launcher para Windows
+# 📱 Stream Deck Mobile - App Launcher para Windows
 
-Este documento apresenta um resumo **extremamente detalhado** da arquitetura, regras de negócio e implementação do projeto **Stream Deck Mobile**. O objetivo deste sistema é transformar um smartphone (com foco na tela AMOLED do Xiaomi Mi 9) em um lançador de aplicativos remoto e não-bloqueante para um computador Windows, operando inteiramente via rede local (Wi-Fi).
+<!-- Espaço para a foto do projeto -->
+![Foto do Projeto](docs/images/image-2.png)
+
+![Print do projeto](docs/images/image.png)
+![printo 2 do projeto](docs/images/image-1.png)
+
+O projeto **Stream Deck Mobile** nasceu com um propósito ecológico e prático: **dar um novo destino e utilidade para um smartphone antigo que já estava descartado**. Aproveitando o display AMOLED de um Xiaomi Mi 9, transformamos um aparelho sem uso em um controlador de mídia e lançador de aplicativos remoto, premium e de baixa latência para o Windows, operando inteiramente via rede local (Wi-Fi).
+
+Para gerenciar a complexidade e estruturar todas as etapas do desenvolvimento, utilizamos o **Obsidian como nosso "Segundo Cérebro"**. Todo o planejamento, backlog de tarefas, problemas resolvidos e decisões de arquitetura foram armazenados e organizados em um *Vault* dedicado, o que garantiu uma evolução limpa e escalável para o projeto.
+
+Abaixo, apresentamos um resumo **extremamente detalhado** da arquitetura, regras de negócio e implementação final do sistema.
 
 ---
 

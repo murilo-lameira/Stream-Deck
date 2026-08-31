@@ -50,27 +50,23 @@ export function DeckSwiper({
         spaceBetween={0}
         slidesPerView={1}
         className="deck-swiper"
-        touchRatio={1.2}
+        touchRatio={1.1}
         resistanceRatio={0.7}
+        preventClicks={false}
+        preventClicksPropagation={false}
+        touchStartPreventDefault={false}
       >
         {/* Slide 1: Aplicativos Principais */}
         <SwiperSlide className="deck-slide">
           <div className="grid-container">
-            {mainApps.map((app) => {
-              const isMicApp = app.id === 'sys_mic_mute';
-              const dynamicApp = isMicApp && systemStatus?.micMuted 
-                ? { ...app, color: '#ef4444', name: 'Mic Off' } 
-                : app;
-                
-              return (
-                <DeckButton
-                  key={dynamicApp.id}
-                  app={dynamicApp}
-                  onLaunch={onLaunch}
-                  disabled={disabled}
-                />
-              );
-            })}
+            {mainApps.map((app) => (
+              <DeckButton
+                key={app.id}
+                app={app}
+                onLaunch={onLaunch}
+                disabled={disabled}
+              />
+            ))}
           </div>
         </SwiperSlide>
 
@@ -92,14 +88,21 @@ export function DeckSwiper({
               </div>
 
               <div className="media-buttons-column">
-                {mediaApps.map((app) => (
-                  <DeckButton
-                    key={app.id}
-                    app={app}
-                    onLaunch={onLaunch}
-                    disabled={disabled}
-                  />
-                ))}
+                {mediaApps.map((app) => {
+                  const isMicApp = app.id === 'sys_mic_mute';
+                  const dynamicApp = isMicApp && systemStatus?.micMuted 
+                    ? { ...app, color: '#ef4444', name: 'Mic Off' } 
+                    : app;
+                    
+                  return (
+                    <DeckButton
+                      key={dynamicApp.id}
+                      app={dynamicApp}
+                      onLaunch={onLaunch}
+                      disabled={disabled}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>

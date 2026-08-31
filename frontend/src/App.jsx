@@ -120,18 +120,21 @@ export function App() {
 
   const isDeckDisabled = status !== 'AUTHENTICATED';
 
-  // Sensor de toque duplo no celular para abrir configuracoes durante o Blackout
+  // Modo Standby OLED (Blackout) quando o computador esta desligado/recarregando
+  const isBlackout = status === 'RECONNECTING';
+
+  // Sensor de toque no celular para abrir configuracoes durante o Blackout
   const lastTapRef = useRef(0);
   const handleBlackoutTap = () => {
     const now = Date.now();
-    if (now - lastTapRef.current < 400) {
+    if (now - lastTapRef.current < 450) {
       setIsSettingsOpen(true);
     }
     lastTapRef.current = now;
   };
 
-  // Se nao estiver autenticado (PC desligado/desconectado), mantem a tela 100% preta (OLED Blackout) sem piscar
-  if (status !== 'AUTHENTICATED') {
+  // Se o computador estiver desligado (RECONNECTING), mantem a tela 100% preta (OLED Blackout) sem piscar
+  if (isBlackout) {
     return (
       <div 
         style={{ 

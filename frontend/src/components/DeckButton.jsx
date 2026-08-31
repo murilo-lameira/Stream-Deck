@@ -46,7 +46,6 @@ export function DeckButton({ app, onLaunch, disabled }) {
               src={app.icon} 
               alt={`${app.name} icon`} 
               className="app-icon" 
-              style={{ width: '56px', height: '56px', margin: '0 auto', display: 'block' }} 
             />
           )}
         </div>
