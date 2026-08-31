@@ -1,5 +1,9 @@
 # 📱 Stream Deck Mobile - App Launcher para Windows
 
+O projeto **Stream Deck Mobile** nasceu com um propósito ecológico e prático: **dar um novo destino e utilidade para um smartphone antigo que já estava descartado**. Aproveitando o display AMOLED de um Xiaomi Mi 9, transformamos um aparelho sem uso em um controlador de mídia e lançador de aplicativos remoto, premium e de baixa latência para o Windows, operando inteiramente via rede local (Wi-Fi).
+
+Para gerenciar a complexidade e estruturar todas as etapas do desenvolvimento, utilizamos o **Obsidian como nosso "Segundo Cérebro"**. Todo o planejamento, backlog de tarefas, problemas resolvidos e decisões de arquitetura foram armazenados e organizados em um *Vault* dedicado, o que garantiu uma evolução limpa e escalável para o projeto.
+
 <div align="center">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
@@ -7,6 +11,7 @@
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" alt="PWA" />
   <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Google Gemini" />
 </div>
 <br>
 
@@ -16,9 +21,6 @@
 ![Print do projeto](docs/images/image.png)
 ![printo 2 do projeto](docs/images/image-1.png)
 
-O projeto **Stream Deck Mobile** nasceu com um propósito ecológico e prático: **dar um novo destino e utilidade para um smartphone antigo que já estava descartado**. Aproveitando o display AMOLED de um Xiaomi Mi 9, transformamos um aparelho sem uso em um controlador de mídia e lançador de aplicativos remoto, premium e de baixa latência para o Windows, operando inteiramente via rede local (Wi-Fi).
-
-Para gerenciar a complexidade e estruturar todas as etapas do desenvolvimento, utilizamos o **Obsidian como nosso "Segundo Cérebro"**. Todo o planejamento, backlog de tarefas, problemas resolvidos e decisões de arquitetura foram armazenados e organizados em um *Vault* dedicado, o que garantiu uma evolução limpa e escalável para o projeto.
 
 Abaixo, apresentamos um resumo **extremamente detalhado** da arquitetura, regras de negócio e implementação final do sistema.
 
