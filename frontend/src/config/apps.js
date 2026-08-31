@@ -101,22 +101,16 @@ export const APPS_LIST = [
     color: '#10b981'
   },
   {
-    id: 'sys_media_playpause',
-    name: 'Play/Pause',
     id: 'sys_media_next',
     name: 'Próxima',
     category: 'Mídia',
-    icon: mediaPlayIcon,
     icon: mediaNextIcon,
     color: '#10b981'
   },
   {
-    id: 'sys_media_next',
-    name: 'Próxima',
     id: 'sys_media_playpause',
     name: 'Play/Pause',
     category: 'Mídia',
-    icon: mediaNextIcon,
     icon: mediaPlayIcon,
     color: '#10b981'
   },

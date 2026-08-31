@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { DeckSwiper } from './components/DeckSwiper';
 import { SettingsModal } from './components/SettingsModal';
@@ -115,20 +115,37 @@ export function App() {
     }
   }, [isDarkMode]);
 
-  // Modo Standby OLED (Blackout)
-  const isDisconnected = status === 'ERROR' || status === 'RECONNECTING';
-
   // Mantem a tela sempre ligada
   useWakeLock();
 
   const isDeckDisabled = status !== 'AUTHENTICATED';
 
-  // Se estiver desconectado, mostra tela 100% preta (OLED Blackout)
-  if (isDisconnected) {
+  // Sensor de toque duplo no celular para abrir configuracoes durante o Blackout
+  const lastTapRef = useRef(0);
+  const handleBlackoutTap = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 400) {
+      setIsSettingsOpen(true);
+    }
+    lastTapRef.current = now;
+  };
+
+  // Se nao estiver autenticado (PC desligado/desconectado), mantem a tela 100% preta (OLED Blackout) sem piscar
+  if (status !== 'AUTHENTICATED') {
     return (
       <div 
-        style={{ width: '100vw', height: '100vh', backgroundColor: '#000000' }}
-        onDoubleClick={() => setIsSettingsOpen(true)}
+        style={{ 
+          width: '100vw', 
+          height: '100vh', 
+          backgroundColor: '#000000',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          cursor: 'pointer',
+          userSelect: 'none'
+        }}
+        onClick={handleBlackoutTap}
+        onTouchEnd={handleBlackoutTap}
       >
         <SettingsModal
           isOpen={isSettingsOpen}

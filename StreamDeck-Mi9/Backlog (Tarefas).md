@@ -58,3 +58,8 @@
 - [x] **Configuração do .gitignore:** Proteção de variáveis de ambiente (.env), binários do ambiente virtual (env/) e pacotes do Node (
 ode_modules/).
 - [x] **Documentação de Instalação:** README.md completo com guia de execução rápida (1 clique com VBS) e manual, arquitetura unificada e recursos de auto-descoberta mDNS.
+
+**Correções e Polimento (v1.0.1)**
+- [x] **Ícone do Obsidian:** Otimização do vetor SVG do Obsidian para carregamento inline instantâneo na grade de botões.
+- [x] **Estabilidade do OLED Blackout:** Correção do ciclo de reconexão do WebSocket para manter a tela 100% preta de forma contínua e sem piscar quando o PC for desligado.
+- [x] **Toque Duplo Mobile:** Adicionado detector de duplo toque para abrir configurações na tela de Blackout no smartphone.
