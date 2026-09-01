@@ -32,7 +32,11 @@ PORT = int(os.getenv("PORT", 8000))
 # Configuracao de Logs
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler("streamdeck.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger("streamdeck.server")
 
@@ -79,6 +83,13 @@ async def media_monitor_task():
     last_thumbnail_b64 = None
     last_conn_count = 0
     
+    sessions = None
+    if MediaManager:
+        try:
+            sessions = await MediaManager.request_async()
+        except Exception as e:
+            logger.error(f"Erro ao obter MediaManager: {e}")
+    
     while True:
         try:
             current_conns = len(manager.active_connections)
@@ -90,18 +101,26 @@ async def media_monitor_task():
             is_playing = False
             thumbnail_b64 = last_thumbnail_b64
             
-            if MediaManager:
-                sessions = await MediaManager.request_async()
+            if sessions:
                 current_session = sessions.get_current_session()
                 if current_session:
                     info = await current_session.try_get_media_properties_async()
-                    title = info.title
-                    artist = info.artist
-                    source_app = current_session.source_app_user_model_id
+                    if info:
+                        title = info.title or ""
+                        artist = info.artist or ""
+                    
+                    try:
+                        source_app = current_session.source_app_user_model_id or ""
+                    except Exception:
+                        source_app = ""
                     
                     if PlaybackStatus:
-                        playback_info = current_session.get_playback_info()
-                        is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
+                        try:
+                            playback_info = current_session.get_playback_info()
+                            if playback_info:
+                                is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
+                        except Exception:
+                            is_playing = False
                     
                     # Update thumbnail only if title/artist changed OR new connection
                     if title != last_title or artist != last_artist or current_conns > last_conn_count:
