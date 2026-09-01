@@ -3,7 +3,6 @@ import { Header } from './components/Header';
 import { DeckSwiper } from './components/DeckSwiper';
 import { SettingsModal } from './components/SettingsModal';
 import { ConfirmModal } from './components/ConfirmModal';
-import { APPS_LIST } from './config/apps';
 import { 
   DEFAULT_AUTH_TOKEN, 
   getDefaultWebSocketUrl, 
@@ -179,14 +178,12 @@ export function App() {
         )}
 
         <DeckSwiper
-          apps={APPS_LIST}
           onLaunch={handleLaunch}
           disabled={isDeckDisabled}
           volume={volume}
           systemStatus={systemStatus}
           onVolumeChange={changeVolume}
           onToggleMute={toggleMute}
-          chunkSize={8}
         />
       </main>
 

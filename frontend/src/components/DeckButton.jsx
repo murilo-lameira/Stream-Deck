@@ -42,11 +42,15 @@ export function DeckButton({ app, onLaunch, disabled }) {
       <div className="button-content">
         <div className="icon-container">
           {app.icon && (
-            <img 
-              src={app.icon} 
-              alt={`${app.name} icon`} 
-              className="app-icon" 
-            />
+            typeof app.icon === 'string' ? (
+              <img 
+                src={app.icon} 
+                alt={`${app.name} icon`} 
+                className="app-icon" 
+              />
+            ) : (
+              <app.icon className="app-icon" size={38} />
+            )
           )}
         </div>
         <span className="app-name">{app.name}</span>

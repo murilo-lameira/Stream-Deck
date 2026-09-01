@@ -55,33 +55,71 @@ def toggle_mute() -> Tuple[int, bool]:
 
 
 
+def _get_capture_volumes():
+    """
+    Retorna uma lista de interfaces IAudioEndpointVolume para todos os
+    dispositivos de captura relevantes (eConsole + eCommunications).
+    Apps de chamada (Discord, WhatsApp, Meet) usam eCommunications;
+    o endpoint eConsole cobre o restante.
+    """
+    from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+    from pycaw.constants import EDataFlow, ERole
+    from comtypes import CLSCTX_ALL
+
+    interfaces = []
+    device_enumerator = AudioUtilities.GetDeviceEnumerator()
+
+    for role in (ERole.eConsole.value, ERole.eCommunications.value):
+        try:
+            device = device_enumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture.value, role)
+            iface = device.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            vol = iface.QueryInterface(IAudioEndpointVolume)
+            # Evita duplicatas (pode ser o mesmo dispositivo físico)
+            if not any(v is vol for v in interfaces):
+                interfaces.append(vol)
+        except Exception:
+            pass
+
+    return interfaces
+
+
 def get_mic_mute_state() -> bool:
     try:
-        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-        from pycaw.constants import EDataFlow, ERole
-        from comtypes import CLSCTX_ALL
-        device_enumerator = AudioUtilities.GetDeviceEnumerator()
-        device = device_enumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture.value, ERole.eConsole.value)
-        interface = device.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume = interface.QueryInterface(IAudioEndpointVolume)
-        return bool(volume.GetMute())
+        vols = _get_capture_volumes()
+        if not vols:
+            return False
+        # Considera mutado se o endpoint principal (eConsole) estiver mutado
+        return bool(vols[0].GetMute())
     except Exception as e:
         logger.error(f"Erro ao obter estado do microfone: {e}")
         return False
 
+
 def toggle_mic_mute() -> bool:
+    """
+    Muta/desmuta o microfone em TODOS os endpoints de captura ativos
+    (eConsole e eCommunications), garantindo que apps de chamada como
+    Discord, WhatsApp Web e Google Meet sejam afetados.
+    """
     try:
-        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-        from pycaw.constants import EDataFlow, ERole
-        from comtypes import CLSCTX_ALL
-        device_enumerator = AudioUtilities.GetDeviceEnumerator()
-        device = device_enumerator.GetDefaultAudioEndpoint(EDataFlow.eCapture.value, ERole.eConsole.value)
-        interface = device.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume = interface.QueryInterface(IAudioEndpointVolume)
-        current_mute = volume.GetMute()
+        vols = _get_capture_volumes()
+        if not vols:
+            logger.warning("Nenhum dispositivo de captura encontrado.")
+            return False
+
+        # Determina novo estado com base no endpoint principal
+        current_mute = bool(vols[0].GetMute())
         new_mute = 0 if current_mute else 1
-        volume.SetMute(new_mute, None)
+
+        for vol in vols:
+            try:
+                vol.SetMute(new_mute, None)
+            except Exception as e:
+                logger.warning(f"Não foi possível mutar um endpoint de captura: {e}")
+
+        logger.info(f"Microfone {'mutado' if new_mute else 'desmutado'} em {len(vols)} endpoint(s).")
         return bool(new_mute)
     except Exception as e:
         logger.error(f"Erro ao alternar microfone: {e}")
         return False
+

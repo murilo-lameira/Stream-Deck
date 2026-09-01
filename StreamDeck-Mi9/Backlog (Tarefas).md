@@ -26,7 +26,7 @@
 - [x] **Mapeamento de Apps:** Configurar executÃ¡veis, URIs (`whatsapp:`) e atalhos (`.lnk`) no `apps_config.py` e replicÃ¡-los na interface, garantindo que o backend use `os.startfile` para links.
 
 [[Design]]
-[[Arquitetura e ComunicaÃ§Ã£o]]
+[[Arquitetura e Comunicação]]
 
 **Backlog V3 (Concluído)**
 - [x] **Standby OLED (Blackout):** Esconder toda a interface quando desconectado do WebSocket, exibindo uma tela #000000 absoluta (economizando bateria da tela AMOLED).
@@ -71,5 +71,5 @@ ode_modules/).
 
 - [x] **Foco de Janelas (Foreground):** Implementação na API Windows (`ctypes.windll.user32`) que procura processos rodando em segundo plano e automaticamente os traz para o primeiro plano (com simulação de tecla ALT para evitar bloqueios de foco), evitando que instâncias redundantes sejam abertas quando o usuário clica nos botões.
 
-**Backlog V7 (Pr�ximas Tarefas)**
-- [ ] **Redesign da Caixa de M�sica:** Alterar o design atual (Widget Now Playing) para um novo layout e experi�ncia visual.
+**Backlog V7 (Próximas Tarefas)**
+- [x] **Redesign da Caixa de Música:** Alterar o design atual (Widget Now Playing) para um novo layout e experiência visual.

@@ -2,6 +2,7 @@ import os
 import logging
 import asyncio
 import socket
+import ctypes
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, status
@@ -24,6 +25,10 @@ except ImportError:
 
 # Carrega variaveis de ambiente
 load_dotenv()
+
+# Muda o nome da janela do CMD para ficar mais amigável no Gerenciador de Tarefas
+if os.name == 'nt':
+    ctypes.windll.kernel32.SetConsoleTitleW("Stream Deck Backend Server")
 
 AUTH_TOKEN = os.getenv("AUTH_TOKEN", "mi9_deck_secret_2026")
 HOST = os.getenv("HOST", "0.0.0.0")

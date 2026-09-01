@@ -45,6 +45,17 @@ APPS_MAP: Dict[str, List[str]] = {
     ],
     "blitz": [
         os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs\Blitz.lnk")
+    ],
+    "youtube": [
+        os.path.expandvars(r"%PROGRAMFILES%\Google\Chrome\Application\chrome.exe"),
+        "https://youtube.com"
+    ],
+    "github": [
+        os.path.expandvars(r"%PROGRAMFILES%\Google\Chrome\Application\chrome.exe"),
+        "https://github.com"
+    ],
+    "ghub": [
+        os.path.expandvars(r"%PROGRAMFILES%\LGHUB\lghub.exe")
     ]
 }
 
@@ -58,7 +69,8 @@ APP_PROCESS_NAMES = {
     "steam": "steam.exe",
     "lol": "leagueclient.exe",
     "obs": "obs64.exe",
-    "blitz": "blitz.exe"
+    "blitz": "blitz.exe",
+    "ghub": "lghub.exe"
 }
 
 # Códigos virtuais do Windows para Mídia e Volume
