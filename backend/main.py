@@ -77,9 +77,12 @@ async def media_monitor_task():
     last_is_playing = None
     last_mic_mute = None
     last_thumbnail_b64 = None
+    last_conn_count = 0
     
     while True:
         try:
+            current_conns = len(manager.active_connections)
+            
             # 1. Checa música
             title = ""
             artist = ""
@@ -100,8 +103,8 @@ async def media_monitor_task():
                         playback_info = current_session.get_playback_info()
                         is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
                     
-                    # Update thumbnail only if title/artist changed
-                    if title != last_title or artist != last_artist:
+                    # Update thumbnail only if title/artist changed OR new connection
+                    if title != last_title or artist != last_artist or current_conns > last_conn_count:
                         thumbnail_b64 = None
                         if info.thumbnail and Buffer:
                             try:
@@ -110,17 +113,19 @@ async def media_monitor_task():
                                 buffer = Buffer(size)
                                 await stream.read_async(buffer, size, 0)
                                 b = bytes(buffer)
-                                thumbnail_b64 = f"data:image/jpeg;base64,{base64.b64encode(b).decode('utf-8')}"
+                                enc = base64.b64encode(b).decode("utf-8")
+                                thumbnail_b64 = "data:image/jpeg;base64," + enc
                             except Exception as e:
                                 logger.error(f"Erro ao ler thumbnail: {e}")
             
             # 2. Checa Mic
             mic_muted = get_mic_mute_state()
             
-            # 3. Faz Broadcast se algo mudou
+            # 3. Faz Broadcast se algo mudou ou se há nova conexão
             if (title != last_title or artist != last_artist or 
                 source_app != last_source_app or is_playing != last_is_playing or
-                mic_muted != last_mic_mute or thumbnail_b64 != last_thumbnail_b64):
+                mic_muted != last_mic_mute or thumbnail_b64 != last_thumbnail_b64 or
+                current_conns > last_conn_count):
                 
                 last_title = title
                 last_artist = artist
@@ -128,8 +133,9 @@ async def media_monitor_task():
                 last_is_playing = is_playing
                 last_mic_mute = mic_muted
                 last_thumbnail_b64 = thumbnail_b64
+                last_conn_count = current_conns
                 
-                if len(manager.active_connections) > 0:
+                if current_conns > 0:
                     await manager.broadcast({
                         "type": "system_status",
                         "now_playing": {

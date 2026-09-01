@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Music } from 'lucide-react';
 import spotifyIcon from '../assets/icons/spotify.svg';
 import chromeIcon from '../assets/icons/chrome.svg';
@@ -45,7 +45,7 @@ export function NowPlaying({ title, artist, sourceApp, isPlaying, thumbnail }) {
             {artist && <span className="np-artist">{artist}</span>}
           </>
         ) : (
-          <span className="np-title idle-text">Nenhuma mídias...</span>
+          <span className="np-title idle-text">Nenhuma mídia...</span>
         )}
       </div>
 
