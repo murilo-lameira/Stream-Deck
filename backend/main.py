@@ -12,10 +12,15 @@ from apps_config import APPS_MAP, launch_app
 from audio_service import get_volume_state, set_volume_level, toggle_mute, get_mic_mute_state
 from zeroconf import ServiceInfo, Zeroconf
 
+import base64
 try:
     from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager as MediaManager
+    from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionPlaybackStatus as PlaybackStatus
+    from winrt.windows.storage.streams import Buffer
 except ImportError:
     MediaManager = None
+    PlaybackStatus = None
+    Buffer = None
 
 # Carrega variaveis de ambiente
 load_dotenv()
@@ -68,13 +73,20 @@ async def media_monitor_task():
     """Tarefa em background que lê os metadados da música atual e o status do microfone."""
     last_title = None
     last_artist = None
+    last_source_app = None
+    last_is_playing = None
     last_mic_mute = None
+    last_thumbnail_b64 = None
     
     while True:
         try:
             # 1. Checa música
             title = ""
             artist = ""
+            source_app = ""
+            is_playing = False
+            thumbnail_b64 = last_thumbnail_b64
+            
             if MediaManager:
                 sessions = await MediaManager.request_async()
                 current_session = sessions.get_current_session()
@@ -82,22 +94,50 @@ async def media_monitor_task():
                     info = await current_session.try_get_media_properties_async()
                     title = info.title
                     artist = info.artist
+                    source_app = current_session.source_app_user_model_id
+                    
+                    if PlaybackStatus:
+                        playback_info = current_session.get_playback_info()
+                        is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
+                    
+                    # Update thumbnail only if title/artist changed
+                    if title != last_title or artist != last_artist:
+                        thumbnail_b64 = None
+                        if info.thumbnail and Buffer:
+                            try:
+                                stream = await info.thumbnail.open_read_async()
+                                size = stream.size
+                                buffer = Buffer(size)
+                                await stream.read_async(buffer, size, 0)
+                                b = bytes(buffer)
+                                thumbnail_b64 = f"data:image/jpeg;base64,{base64.b64encode(b).decode('utf-8')}"
+                            except Exception as e:
+                                logger.error(f"Erro ao ler thumbnail: {e}")
             
             # 2. Checa Mic
             mic_muted = get_mic_mute_state()
             
             # 3. Faz Broadcast se algo mudou
-            if title != last_title or artist != last_artist or mic_muted != last_mic_mute:
+            if (title != last_title or artist != last_artist or 
+                source_app != last_source_app or is_playing != last_is_playing or
+                mic_muted != last_mic_mute or thumbnail_b64 != last_thumbnail_b64):
+                
                 last_title = title
                 last_artist = artist
+                last_source_app = source_app
+                last_is_playing = is_playing
                 last_mic_mute = mic_muted
+                last_thumbnail_b64 = thumbnail_b64
                 
                 if len(manager.active_connections) > 0:
                     await manager.broadcast({
                         "type": "system_status",
                         "now_playing": {
                             "title": title,
-                            "artist": artist
+                            "artist": artist,
+                            "source_app": source_app,
+                            "is_playing": is_playing,
+                            "thumbnail": thumbnail_b64
                         },
                         "mic_muted": mic_muted
                     })

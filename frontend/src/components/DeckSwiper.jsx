@@ -76,6 +76,9 @@ export function DeckSwiper({
             <NowPlaying 
               title={systemStatus?.nowPlaying?.title} 
               artist={systemStatus?.nowPlaying?.artist} 
+              sourceApp={systemStatus?.nowPlaying?.source_app}
+              isPlaying={systemStatus?.nowPlaying?.is_playing}
+              thumbnail={systemStatus?.nowPlaying?.thumbnail}
             />
             <div className="media-screen-grid">
               <div className="media-slider-slot">
