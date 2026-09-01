@@ -3,7 +3,7 @@ import { Music } from 'lucide-react';
 import spotifyIcon from '../assets/icons/spotify.svg';
 import chromeIcon from '../assets/icons/chrome.svg';
 
-export function NowPlaying({ title, artist, sourceApp, isPlaying }) {
+export function NowPlaying({ title, artist, sourceApp, isPlaying, thumbnail }) {
   // Define qual ícone usar com base no source_app do Windows
   const getAppIcon = () => {
     if (!sourceApp) return null;
@@ -23,7 +23,14 @@ export function NowPlaying({ title, artist, sourceApp, isPlaying }) {
   return (
     <div className={"now-playing-banner apple-style " + (hasMedia ? 'active' : 'idle')}>
       <div className="np-art-container">
-        {hasMedia ? (
+        {thumbnail ? (
+          <>
+            <img src={`data:image/png;base64,${thumbnail}`} className="np-thumbnail" alt="Art" />
+            <div className="np-app-badge">
+              {getAppIcon()}
+            </div>
+          </>
+        ) : hasMedia ? (
           getAppIcon()
         ) : (
           <Music className="np-app-icon fallback" size={20} />

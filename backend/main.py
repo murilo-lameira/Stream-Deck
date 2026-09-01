@@ -55,7 +55,7 @@ class ConnectionManager:
     async def broadcast(self, message: dict):
         for connection in self.active_connections:
             try:
-                await connection.send_json(message)
+                await asyncio.wait_for(connection.send_json(message), timeout=1.0)
             except Exception:
                 pass
 
@@ -73,79 +73,137 @@ def get_local_ip():
         s.close()
     return IP
 
+import threading
+
+# Thread dedicada para leitura de mídia via winrt (evita conflito de contexto COM)
+_media_thread_loop: asyncio.AbstractEventLoop | None = None
+_media_thread_ready = threading.Event()
+
+def _media_thread_func():
+    """Thread dedicada que mantém seu próprio event loop para chamadas winrt."""
+    global _media_thread_loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    _media_thread_loop = loop
+    _media_thread_ready.set()
+    loop.run_forever()
+
+def _start_media_thread():
+    t = threading.Thread(target=_media_thread_func, daemon=True, name="winrt-media-thread")
+    t.start()
+    _media_thread_ready.wait(timeout=5)
+
+async def _fetch_media_in_dedicated_thread() -> dict:
+    """Submete a coroutine de leitura de mídia ao loop da thread dedicada."""
+    result = {"title": "", "artist": "", "source_app": "", "is_playing": False, "thumbnail": ""}
+    
+    if not _media_thread_loop or not MediaManager:
+        return result
+    
+    async def _do():
+        try:
+            mgr = await MediaManager.request_async()
+            
+            # Prioridade 1: sessão com status PLAYING
+            session = None
+            all_sessions = mgr.get_sessions()
+            for s in all_sessions:
+                try:
+                    pb = s.get_playback_info()
+                    if pb and pb.playback_status == PlaybackStatus.PLAYING:
+                        session = s
+                        break
+                except Exception:
+                    pass
+            
+            # Prioridade 2: sessão atual do Windows
+            if not session:
+                session = mgr.get_current_session()
+            
+            if not session:
+                return result
+            
+            # Título e artista
+            try:
+                info = await asyncio.wait_for(session.try_get_media_properties_async(), timeout=3.0)
+                if info:
+                    result["title"] = info.title or ""
+                    result["artist"] = info.artist or ""
+                    # Thumbnail
+                    if info.thumbnail and Buffer:
+                        try:
+                            stream = await asyncio.wait_for(info.thumbnail.open_read_async(), timeout=3.0)
+                            buf = Buffer(stream.size)
+                            await asyncio.wait_for(stream.read_async(buf, stream.size, 0), timeout=3.0)
+                            from winrt.windows.storage.streams import DataReader
+                            reader = DataReader.from_buffer(buf)
+                            b = bytearray(stream.size)
+                            reader.read_bytes(b)
+                            result["thumbnail"] = base64.b64encode(b).decode('utf-8')
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+            
+            # Source app
+            try:
+                result["source_app"] = session.source_app_user_model_id or ""
+            except Exception:
+                pass
+            
+            # Playback status
+            if PlaybackStatus:
+                try:
+                    pb = session.get_playback_info()
+                    if pb:
+                        result["is_playing"] = (pb.playback_status == PlaybackStatus.PLAYING)
+                except Exception:
+                    pass
+        except Exception as e:
+            logger.debug(f"Erro ao buscar mídia: {e}")
+        
+        return result
+    
+    # Envia a coroutine para o loop da thread dedicada e aguarda resultado
+    future = asyncio.run_coroutine_threadsafe(_do(), _media_thread_loop)
+    try:
+        return await asyncio.get_event_loop().run_in_executor(None, lambda: future.result(timeout=8))
+    except Exception as e:
+        logger.debug(f"Timeout/erro na leitura de mídia: {e}")
+        return result
+
+
 async def media_monitor_task():
     """Tarefa em background que lê os metadados da música atual e o status do microfone."""
+    _start_media_thread()
+    
     last_title = None
     last_artist = None
     last_source_app = None
     last_is_playing = None
     last_mic_mute = None
+    last_thumbnail = None
     last_conn_count = 0
     
     while True:
+        logger.info("Media monitor loop tick")
         try:
             current_conns = len(manager.active_connections)
             
-            # 1. Checa música
-            title = ""
-            artist = ""
-            source_app = ""
-            is_playing = False
+            media_info = await _fetch_media_in_dedicated_thread()
             
-            if MediaManager:
-                sessions = await MediaManager.request_async()
-                if sessions:
-                    current_session = None
-                    try:
-                        all_sessions = sessions.get_sessions()
-                        
-                        # 1. Tenta achar uma sessão que esteja tocando
-                        for s in all_sessions:
-                            pb = s.get_playback_info()
-                            if pb and pb.playback_status == PlaybackStatus.PLAYING:
-                                current_session = s
-                                break
-                                
-                        # 2. Se nenhuma estiver tocando, pega a primeira que tem um título válido
-                        if not current_session:
-                            for s in all_sessions:
-                                temp_info = await s.try_get_media_properties_async()
-                                if temp_info and temp_info.title:
-                                    current_session = s
-                                    break
-                    except Exception:
-                        pass
-                        
-                    # 3. Fallback para o padrão do Windows
-                    if not current_session:
-                        current_session = sessions.get_current_session()
-                        
-                    if current_session:
-                        info = await current_session.try_get_media_properties_async()
-                        if info:
-                            title = info.title or ""
-                            artist = info.artist or ""
-                    
-                    try:
-                        source_app = current_session.source_app_user_model_id or ""
-                    except Exception:
-                        source_app = ""
-                    
-                    if PlaybackStatus:
-                        try:
-                            playback_info = current_session.get_playback_info()
-                            if playback_info:
-                                is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
-                        except Exception:
-                            is_playing = False
+            title = media_info.get("title", "")
+            artist = media_info.get("artist", "")
+            source_app = media_info.get("source_app", "")
+            is_playing = media_info.get("is_playing", False)
+            thumbnail = media_info.get("thumbnail", "")
             
-            # 2. Checa Mic
-            mic_muted = get_mic_mute_state()
+            mic_muted = await asyncio.to_thread(get_mic_mute_state)
             
-            # 3. Faz Broadcast se algo mudou ou se há nova conexão
+            # Broadcast se algo mudou ou se há nova conexão
             if (title != last_title or artist != last_artist or 
                 source_app != last_source_app or is_playing != last_is_playing or
-                mic_muted != last_mic_mute or
+                mic_muted != last_mic_mute or thumbnail != last_thumbnail or
                 current_conns > last_conn_count):
                 
                 last_title = title
@@ -153,16 +211,19 @@ async def media_monitor_task():
                 last_source_app = source_app
                 last_is_playing = is_playing
                 last_mic_mute = mic_muted
+                last_thumbnail = thumbnail
                 last_conn_count = current_conns
                 
                 if current_conns > 0:
+                    logger.info(f"Broadcasting: title='{title}', artist='{artist}', is_playing={is_playing}")
                     await manager.broadcast({
                         "type": "system_status",
                         "now_playing": {
                             "title": title,
                             "artist": artist,
                             "source_app": source_app,
-                            "is_playing": is_playing
+                            "is_playing": is_playing,
+                            "thumbnail": thumbnail
                         },
                         "mic_muted": mic_muted
                     })
@@ -170,7 +231,8 @@ async def media_monitor_task():
         except Exception as e:
             logger.error(f"Erro no monitor de mídia: {e}")
             
-        await asyncio.sleep(1) # Checa a cada 1 segundo
+        logger.info("Loop tick end")
+        await asyncio.sleep(1)
 
 zeroconf_instance = None
 zeroconf_info = None
