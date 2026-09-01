@@ -106,7 +106,7 @@ async def media_monitor_task():
                     # Update thumbnail only if title/artist changed OR new connection
                     if title != last_title or artist != last_artist or current_conns > last_conn_count:
                         thumbnail_b64 = None
-                        if info.thumbnail and Buffer:
+                        if info and info.thumbnail and Buffer:
                             try:
                                 stream = await info.thumbnail.open_read_async()
                                 size = stream.size
@@ -117,6 +117,9 @@ async def media_monitor_task():
                                 thumbnail_b64 = "data:image/jpeg;base64," + enc
                             except Exception as e:
                                 logger.error(f"Erro ao ler thumbnail: {e}")
+                else:
+                    # No active session, so thumbnail is none
+                    thumbnail_b64 = None
             
             # 2. Checa Mic
             mic_muted = get_mic_mute_state()
