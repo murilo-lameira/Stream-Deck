@@ -95,25 +95,49 @@ async def media_monitor_task():
             if MediaManager:
                 sessions = await MediaManager.request_async()
                 if sessions:
-                    current_session = sessions.get_current_session()
+                    current_session = None
+                    try:
+                        all_sessions = sessions.get_sessions()
+                        
+                        # 1. Tenta achar uma sessão que esteja tocando
+                        for s in all_sessions:
+                            pb = s.get_playback_info()
+                            if pb and pb.playback_status == PlaybackStatus.PLAYING:
+                                current_session = s
+                                break
+                                
+                        # 2. Se nenhuma estiver tocando, pega a primeira que tem um título válido
+                        if not current_session:
+                            for s in all_sessions:
+                                temp_info = await s.try_get_media_properties_async()
+                                if temp_info and temp_info.title:
+                                    current_session = s
+                                    break
+                    except Exception:
+                        pass
+                        
+                    # 3. Fallback para o padrão do Windows
+                    if not current_session:
+                        current_session = sessions.get_current_session()
+                        
                     if current_session:
                         info = await current_session.try_get_media_properties_async()
                         if info:
                             title = info.title or ""
                             artist = info.artist or ""
-                        
+                    
+                    try:
+                        source_app = current_session.source_app_user_model_id or ""
+                    except Exception:
+                        source_app = ""
+                    
+                    if PlaybackStatus:
                         try:
-                            source_app = current_session.source_app_user_model_id or ""
+                            playback_info = current_session.get_playback_info()
+                            if playback_info:
+                                is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
                         except Exception:
-                            source_app = ""
-                        
-                        if PlaybackStatus:
-                            try:
-                                playback_info = current_session.get_playback_info()
-                                if playback_info:
-                                    is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
-                            except Exception:
-                                is_playing = False
+                            is_playing = False
             
             # 2. Checa Mic
             mic_muted = get_mic_mute_state()
