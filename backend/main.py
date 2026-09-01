@@ -82,13 +82,6 @@ async def media_monitor_task():
     last_mic_mute = None
     last_conn_count = 0
     
-    sessions = None
-    if MediaManager:
-        try:
-            sessions = await MediaManager.request_async()
-        except Exception as e:
-            logger.error(f"Erro ao obter MediaManager: {e}")
-    
     while True:
         try:
             current_conns = len(manager.active_connections)
@@ -99,26 +92,28 @@ async def media_monitor_task():
             source_app = ""
             is_playing = False
             
-            if sessions:
-                current_session = sessions.get_current_session()
-                if current_session:
-                    info = await current_session.try_get_media_properties_async()
-                    if info:
-                        title = info.title or ""
-                        artist = info.artist or ""
-                    
-                    try:
-                        source_app = current_session.source_app_user_model_id or ""
-                    except Exception:
-                        source_app = ""
-                    
-                    if PlaybackStatus:
+            if MediaManager:
+                sessions = await MediaManager.request_async()
+                if sessions:
+                    current_session = sessions.get_current_session()
+                    if current_session:
+                        info = await current_session.try_get_media_properties_async()
+                        if info:
+                            title = info.title or ""
+                            artist = info.artist or ""
+                        
                         try:
-                            playback_info = current_session.get_playback_info()
-                            if playback_info:
-                                is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
+                            source_app = current_session.source_app_user_model_id or ""
                         except Exception:
-                            is_playing = False
+                            source_app = ""
+                        
+                        if PlaybackStatus:
+                            try:
+                                playback_info = current_session.get_playback_info()
+                                if playback_info:
+                                    is_playing = (playback_info.playback_status == PlaybackStatus.PLAYING)
+                            except Exception:
+                                is_playing = False
             
             # 2. Checa Mic
             mic_muted = get_mic_mute_state()
