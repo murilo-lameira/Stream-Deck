@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "00 - Meta/MAIN.md",
+                "file": "00 - Meta/Índice Geral.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MAIN"
+              "title": "Índice Geral"
             }
           }
         ],
@@ -211,11 +211,11 @@
       "markdown-importer:Abrir importador Markdown": false
     }
   },
-  "active": "917c304ecbeab8f5",
+  "active": "5521a831625d968e",
   "lastOpenFiles": [
+    "00 - Meta/MAIN.md",
     "01 - Arquitetura/Orquestracao de Agentes e Loop de Feedback.md",
     "02 - Backlog/Features.md",
-    "00 - Meta/MAIN.md",
     "00 - Meta/Índice Geral.md",
     "gemini-scribe/Prompts/vault-guardian.md",
     "gemini-scribe/Prompts/apps-curator.md",
