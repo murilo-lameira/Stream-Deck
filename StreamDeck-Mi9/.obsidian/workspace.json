@@ -211,8 +211,9 @@
       "markdown-importer:Abrir importador Markdown": false
     }
   },
-  "active": "5521a831625d968e",
+  "active": "917c304ecbeab8f5",
   "lastOpenFiles": [
+    "01 - Arquitetura/Orquestracao de Agentes e Loop de Feedback.md",
     "02 - Backlog/Features.md",
     "00 - Meta/MAIN.md",
     "00 - Meta/Índice Geral.md",
@@ -245,7 +246,6 @@
     "Arquitetura e Comunicação.md",
     "teste-auditoria.md",
     "gemini-scribe/Prompts/example-expert.md",
-    "Arquitetura e ComunicaÃ§Ã£o.md",
     "gemini-scribe/Scheduled-Tasks/scheduled-tasks-state.json",
     "gemini-scribe/Scheduled-Tasks/Runs",
     "gemini-scribe/Scheduled-Tasks"
