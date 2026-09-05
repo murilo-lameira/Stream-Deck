@@ -12,11 +12,25 @@ import {
 import { useWebSocket } from './hooks/useWebSocket';
 import { useWakeLock } from './hooks/useWakeLock';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { hapticFeedback } from './utils/haptics';
 import './App.css';
 
 export function App() {
   const [wsUrl, setWsUrl] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_SERVER) || getDefaultWebSocketUrl();
+    const saved = localStorage.getItem(STORAGE_KEY_SERVER);
+    const defaultUrl = getDefaultWebSocketUrl();
+
+    // Se o usuário abriu a página diretamente pelo IP do PC (ex: http://192.168.15.16:8000),
+    // sincroniza automaticamente o WebSocket com esse IP para evitar tentar conectar no IP antigo.
+    if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      const currentOriginWs = `ws://${window.location.hostname}:${window.location.port || '8000'}/ws`;
+      if (!saved || saved.includes('localhost') || saved.includes('127.0.0.1') || saved !== currentOriginWs) {
+        localStorage.setItem(STORAGE_KEY_SERVER, currentOriginWs);
+        return currentOriginWs;
+      }
+    }
+
+    return saved || defaultUrl;
   });
 
   const [authToken, setAuthToken] = useState(() => {
@@ -38,6 +52,7 @@ export function App() {
     sendAction, 
     volume, 
     systemStatus,
+    runningApps,
     changeVolume, 
     toggleMute, 
     reconnect 
@@ -63,6 +78,11 @@ export function App() {
 
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
+    if (type === 'success') {
+      hapticFeedback.success();
+    } else if (type === 'error') {
+      hapticFeedback.warning();
+    }
     setTimeout(() => {
       setToast(null);
     }, 2800);
@@ -70,6 +90,7 @@ export function App() {
 
   const handleLaunch = (appId) => {
     if (appId === 'shutdown_pc') {
+      hapticFeedback.warning();
       setPendingShutdown(true);
       return;
     }
@@ -84,6 +105,7 @@ export function App() {
   };
 
   const confirmShutdown = () => {
+    hapticFeedback.warning();
     setPendingShutdown(false);
     executeLaunch('shutdown_pc');
   };
@@ -133,6 +155,7 @@ export function App() {
   };
 
   // Se o computador estiver desligado (RECONNECTING), mantem a tela 100% preta (OLED Blackout) sem piscar
+  // Se o computador estiver desligado (RECONNECTING), mantem a tela 100% preta (OLED Blackout) com dica sutil
   if (isBlackout) {
     return (
       <div 
@@ -144,11 +167,21 @@ export function App() {
           inset: 0,
           zIndex: 9999,
           cursor: 'pointer',
-          userSelect: 'none'
+          userSelect: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          paddingBottom: '24px'
         }}
         onClick={handleBlackoutTap}
         onTouchEnd={handleBlackoutTap}
       >
+        <div style={{ color: 'rgba(255, 255, 255, 0.22)', fontSize: '0.75rem', textAlign: 'center', pointerEvents: 'none' }}>
+          Conectando a {wsUrl}<br />
+          <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Toque 2x na tela para alterar IP</span>
+        </div>
+
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
@@ -182,6 +215,7 @@ export function App() {
           disabled={isDeckDisabled}
           volume={volume}
           systemStatus={systemStatus}
+          runningApps={runningApps}
           onVolumeChange={changeVolume}
           onToggleMute={toggleMute}
         />

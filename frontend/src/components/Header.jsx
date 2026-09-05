@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw, Settings, ShieldCheck, ShieldAlert, Moon, Sun, Maximize, Minimize } from 'lucide-react';
+import { hapticFeedback } from '../utils/haptics';
 
 export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -19,6 +20,7 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
   }, []);
 
   const toggleFullscreen = async () => {
+    hapticFeedback.light();
     try {
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         const el = document.documentElement;
@@ -105,6 +107,10 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
         <button 
           className="btn-settings-icon" 
           onClick={onToggleTheme} 
+          onClick={() => {
+            hapticFeedback.medium();
+            onToggleTheme();
+          }} 
           title="Alternar Tema"
           aria-label="Alternar Tema"
         >
@@ -113,6 +119,10 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
         <button 
           className="btn-settings-icon" 
           onClick={onOpenSettings} 
+          onClick={() => {
+            hapticFeedback.light();
+            onOpenSettings();
+          }} 
           title="Configurações de Conexão"
           aria-label="Configurações"
         >

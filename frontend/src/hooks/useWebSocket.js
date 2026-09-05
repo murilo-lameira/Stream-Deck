@@ -7,9 +7,12 @@ export function useWebSocket(url, authToken) {
   
   const [volume, setVolumeState] = useState({ level: 50, muted: false });
   const [systemStatus, setSystemStatus] = useState({ nowPlaying: null, micMuted: false });
+  const [runningApps, setRunningApps] = useState([]);
   
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
+  const heartbeatTimerRef = useRef(null);
+  const lastActivityRef = useRef(0);
   const isUnmountedRef = useRef(false);
 
   const clearReconnectTimer = () => {
@@ -19,8 +22,16 @@ export function useWebSocket(url, authToken) {
     }
   };
 
+  const clearHeartbeatTimer = () => {
+    if (heartbeatTimerRef.current) {
+      clearInterval(heartbeatTimerRef.current);
+      heartbeatTimerRef.current = null;
+    }
+  };
+
   const scheduleReconnect = useCallback(() => {
     clearReconnectTimer();
+    clearHeartbeatTimer();
     if (isUnmountedRef.current) return;
     
     setStatus('RECONNECTING');
@@ -28,11 +39,12 @@ export function useWebSocket(url, authToken) {
       if (!isUnmountedRef.current) {
         connect(true);
       }
-    }, 3000); // Tentar reconectar a cada 3 segundos
+    }, 2500); // Tentar reconectar a cada 2.5 segundos
   }, [url, authToken]);
 
   const connect = useCallback((isRetry = false) => {
     clearReconnectTimer();
+    clearHeartbeatTimer();
     
     if (wsRef.current) {
       wsRef.current.onopen = null;
@@ -41,9 +53,7 @@ export function useWebSocket(url, authToken) {
       wsRef.current.onclose = null;
       try {
         wsRef.current.close();
-      } catch (e) {
-        // ignore
-      }
+      } catch (_e) {}
       wsRef.current = null;
     }
 
@@ -61,12 +71,33 @@ export function useWebSocket(url, authToken) {
       ws.onopen = () => {
         if (isUnmountedRef.current) return;
         setStatus('CONNECTED');
+        lastActivityRef.current = Date.now();
         // Handshake imediato com o token de seguranca
         ws.send(JSON.stringify({ auth_token: authToken }));
+
+        // Inicia Heartbeat (Ping a cada 15s e detector de conexao zumbi)
+        clearHeartbeatTimer();
+        heartbeatTimerRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            try {
+              ws.send(JSON.stringify({ action: 'ping' }));
+            } catch (err) {
+              console.warn('Falha ao enviar heartbeat ping:', err);
+            }
+
+            // Se faz mais de 25 segundos que o servidor nao responde nada, socket esta zumbi
+            if (Date.now() - lastActivityRef.current > 25000) {
+              console.warn('Conexao WebSocket inativa detectada (sem resposta do servidor). Forcando reconexao.');
+              try { ws.close(); } catch (_e) {}
+            }
+          }
+        }, 15000);
       };
 
       ws.onmessage = (event) => {
         if (isUnmountedRef.current) return;
+        lastActivityRef.current = Date.now();
+
         try {
           const data = JSON.parse(event.data);
           setLastMessage(data);
@@ -76,6 +107,9 @@ export function useWebSocket(url, authToken) {
             if (data.volume) {
               setVolumeState(data.volume);
             }
+            if (data.running_apps) {
+              setRunningApps(data.running_apps);
+            }
           } else if (data.type === 'volume_state') {
             setVolumeState({ level: data.level, muted: data.muted });
           } else if (data.type === 'system_status') {
@@ -83,6 +117,13 @@ export function useWebSocket(url, authToken) {
               nowPlaying: data.now_playing,
               micMuted: data.mic_muted
             });
+            if (data.running_apps) {
+              setRunningApps(data.running_apps);
+            }
+          } else if (data.type === 'running_apps_update') {
+            if (data.running_apps) {
+              setRunningApps(data.running_apps);
+            }
           }
         } catch (e) {
           console.error('Erro ao processar mensagem do WebSocket:', e);
@@ -96,6 +137,7 @@ export function useWebSocket(url, authToken) {
 
       ws.onclose = (event) => {
         if (isUnmountedRef.current) return;
+        clearHeartbeatTimer();
         
         if (event.code === 1008) {
           setStatus('ERROR');
@@ -118,9 +160,30 @@ export function useWebSocket(url, authToken) {
     isUnmountedRef.current = false;
     connect();
 
+    // Listener para o Xiaomi Mi 9: quando a tela acende ou a aba volta a ser visivel
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          console.info('Dispositivo voltou a ficar ativo. Restabelecendo WebSocket...');
+          connect();
+        }
+      }
+    };
+
+    const handleOnline = () => {
+      console.info('Rede online detectada. Reconectando...');
+      connect();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+
     return () => {
       isUnmountedRef.current = true;
       clearReconnectTimer();
+      clearHeartbeatTimer();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -178,6 +241,7 @@ export function useWebSocket(url, authToken) {
     sendAction,
     volume,
     systemStatus,
+    runningApps,
     changeVolume,
     toggleMute,
     reconnect: connect

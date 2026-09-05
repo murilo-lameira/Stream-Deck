@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
+import { hapticFeedback } from '../utils/haptics';
 
-export function DeckButton({ app, onLaunch, disabled }) {
+export function DeckButton({ app, onLaunch, disabled, isRunning }) {
   const [isPressed, setIsPressed] = useState(false);
   const [justLaunched, setJustLaunched] = useState(false);
 
@@ -8,14 +9,8 @@ export function DeckButton({ app, onLaunch, disabled }) {
     e.preventDefault();
     if (disabled) return;
 
-    // Feedback haptico para mobile (vibracao curta no Xiaomi Mi 9)
-    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
-      try {
-        window.navigator.vibrate(35);
-      } catch (err) {
-        // Ignora navegadores que bloqueiem vibracao sem interacao previa
-      }
-    }
+    // Feedback haptico padronizado para o Xiaomi Mi 9
+    hapticFeedback.light();
 
     setJustLaunched(true);
     setTimeout(() => setJustLaunched(false), 500);
@@ -25,7 +20,7 @@ export function DeckButton({ app, onLaunch, disabled }) {
 
   return (
     <button
-      className={`deck-button ${isPressed ? 'pressed' : ''} ${justLaunched ? 'launched' : ''} ${disabled ? 'disabled' : ''}`}
+      className={`deck-button ${isPressed ? 'pressed' : ''} ${justLaunched ? 'launched' : ''} ${disabled ? 'disabled' : ''} ${isRunning ? 'is-running' : ''}`}
       style={{
         '--app-color': app.color || '#3b82f6',
       }}
@@ -38,6 +33,9 @@ export function DeckButton({ app, onLaunch, disabled }) {
       disabled={disabled}
       type="button"
     >
+      {/* LED Indicador de Aplicativo Ativo no Windows */}
+      {isRunning && <span className="app-running-led" title="Aplicativo em execução no Windows" />}
+
       <div className="button-glow"></div>
       <div className="button-content">
         <div className="icon-container">

@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, EffectCreative } from 'swiper/modules';
 import { DeckButton } from './DeckButton';
 import { VolumeSlider } from './VolumeSlider';
 import { NowPlaying } from './NowPlaying';
 import { PAGE1_APPS, MEDIA_APPS, PAGE3_APPS } from '../config/apps';
+import { hapticFeedback } from '../utils/haptics';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -15,6 +16,7 @@ export function DeckSwiper({
   disabled,
   volume,
   systemStatus,
+  runningApps,
   onVolumeChange,
   onToggleMute,
 }) {
@@ -37,6 +39,7 @@ export function DeckSwiper({
           },
         }}
         speed={550}
+        onSlideChange={() => hapticFeedback.selection()}
         pagination={{
           clickable: true,
           bulletClass: 'custom-bullet',
@@ -60,6 +63,7 @@ export function DeckSwiper({
                 app={app}
                 onLaunch={onLaunch}
                 disabled={disabled}
+                isRunning={runningApps?.includes(app.id)}
               />
             ))}
           </div>
@@ -98,6 +102,7 @@ export function DeckSwiper({
                       app={dynamicApp}
                       onLaunch={onLaunch}
                       disabled={disabled}
+                      isRunning={runningApps?.includes(app.id)}
                     />
                   );
                 })}
@@ -115,6 +120,7 @@ export function DeckSwiper({
                 app={app}
                 onLaunch={onLaunch}
                 disabled={disabled}
+                isRunning={runningApps?.includes(app.id)}
               />
             ))}
           </div>

@@ -18,33 +18,21 @@
             }
           },
           {
-            "id": "6825aa2dd9d741f0",
+            "id": "5521a831625d968e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Arquitetura e Comunicação.md",
+                "file": "00 - Meta/MAIN.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Arquitetura e Comunicação"
-            }
-          },
-          {
-            "id": "5521a831625d968e",
-            "type": "leaf",
-            "state": {
-              "type": "bases",
-              "state": {
-                "file": "Índice.base",
-                "viewName": "Tabela"
-              },
-              "icon": "lucide-table",
-              "title": "Índice"
+              "title": "MAIN"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -219,31 +207,47 @@
       "templates:Inserir modelo": false,
       "command-palette:Abrir paleta de comandos": false,
       "bases:Criar nova base": false,
-      "gemini-scribe:Gemini Scribe: Modo agente": false
+      "gemini-scribe:Gemini Scribe: Modo agente": false,
+      "markdown-importer:Abrir importador Markdown": false
     }
   },
-  "active": "a68254e2930afc51",
+  "active": "5521a831625d968e",
   "lastOpenFiles": [
-    "gemini-scribe/Prompts/example-expert.md",
+    "02 - Backlog/Features.md",
+    "00 - Meta/MAIN.md",
+    "00 - Meta/Índice Geral.md",
+    "gemini-scribe/Prompts/vault-guardian.md",
+    "gemini-scribe/Prompts/apps-curator.md",
+    "gemini-scribe/Prompts/automation-integrator.md",
+    "gemini-scribe/Prompts/frontend-designer.md",
+    "gemini-scribe/Prompts/backend-architect.md",
+    "05 - Aplicativos/Regras de Execução no Windows.md",
+    "05 - Aplicativos/Catálogo de Aplicativos.md",
+    "04 - Integracoes/Integração n8n e Alexa.md",
+    "03 - Design/Responsividade e Orientação.md",
+    "03 - Design/Componentes de Mídia.md",
+    "03 - Design/Diretrizes de Design.md",
+    "02 - Backlog/Roadmap e Planejamento Futuro.md",
+    "02 - Backlog/Histórico de Entregas.md",
+    "01 - Arquitetura/Rede e Autodescoberta.md",
+    "01 - Arquitetura/Protocolo WebSocket e Contratos.md",
+    "01 - Arquitetura/Visão Geral e Camadas.md",
+    "gerar_docs.py",
+    "05 - Aplicativos",
+    "04 - Integracoes",
+    "03 - Design",
+    "02 - Backlog",
+    "01 - Arquitetura",
+    "00 - Meta",
+    "Estrutura.md",
+    "Design.md",
     "Backlog (Tarefas).md",
+    "Arquitetura e Comunicação.md",
+    "teste-auditoria.md",
+    "gemini-scribe/Prompts/example-expert.md",
     "Arquitetura e ComunicaÃ§Ã£o.md",
     "gemini-scribe/Scheduled-Tasks/scheduled-tasks-state.json",
     "gemini-scribe/Scheduled-Tasks/Runs",
-    "gemini-scribe/Scheduled-Tasks",
-    "gemini-scribe/Skills",
-    "gemini-scribe/Prompts",
-    "gemini-scribe/Background-Tasks",
-    "gemini-scribe/Agent-Sessions",
-    "gemini-scribe",
-    "Estrutura.md",
-    "Tecnologias.md",
-    "Design.md",
-    "Arquitetura e Comunicação.md",
-    "Sem título.base",
-    "Índice.md",
-    "Mapeamento de Aplicativos.md",
-    "Índice.base",
-    "Sem título.md",
-    "Bem-vindo.md"
+    "gemini-scribe/Scheduled-Tasks"
   ]
 }

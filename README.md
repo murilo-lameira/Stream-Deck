@@ -157,7 +157,29 @@ cd "backend"
 * **Now Playing Banner:** Sincronização em tempo real de metadados de música (Spotify/YouTube/Windows Media Control) no topo da tela de mídias.
 * **Controle de Microfone e Mute Global:** Mute de microfone inteligente com feedback visual dinâmico (botão fica vermelho e muda para "Mic Off").
 * **OLED Standby Mode:** Tela 100% preta de economia de bateria quando desconectado.
+* **Auto-Descoberta mDNS & Auto-Sync de IP:** Acesso por `streamdeck.local:8000` com resolução de hostname e sincronização automática de endereço de WebSocket no PWA.
+* **Now Playing Banner com Glow Reativo:** Sincronização em tempo real de metadados de música (Spotify/YouTube/Windows Media Control) com efeito de iluminação neon no card gerado a partir da cor dominante da capa do álbum.
+* **Controle de Microfone e Mute Global:** Mute de microfone inteligente atuando em múltiplos canais simultaneamente (`eConsole` e `eCommunications`), cobrindo Discord, WhatsApp e Google Meet com feedback visual dinâmico.
+* **OLED Standby Mode:** Tela 100% preta de economia de bateria quando desconectado, com suporte a duplo toque para reconfiguração rápida.
+* **Ecossistema Integrado:** Controle de câmeras residenciais (**VMS CFTV**) e diagnóstico de hardware com o nosso projeto autônomo (**CheckUP Windows**).
 * **Design Responsivo Portrait & Landscape:** Grade e botões perfeitamente proporcionais em qualquer orientação do aparelho.
 
 ---
+
+## 🗺️ Roadmap de Evolução & Automações Futuras
+
+### 1. 🤖 Integração com Alexa & Fluxos de Agente no n8n
+* **Webhooks Bidirecionais:** Implementação de endpoints REST (`POST /api/trigger`) no FastAPI para que o n8n ou a Alexa executem macros e ações no computador remotamente.
+* **Acionamento por Voz (Alexa -> n8n -> Stream Deck):** Comandos de voz como *"Alexa, preparar estúdio"* disparam fluxos inteligentes no n8n que abrem o OBS, abrem o CheckUP, mutam o microfone e ativam a iluminação da sala.
+* **Cenas Físicas (Stream Deck -> n8n -> Casa Inteligente):** Botões dedicados no Xiaomi Mi 9 para despachar webhooks no n8n acionando lâmpadas inteligentes, ar condicionado e avisos sonoros na Alexa.
+
+### 2. 📹 Monitoramento e Central de Segurança
+* **Miniatura RTSP ao Vivo:** Abrir um modal flutuante no celular com streaming de baixa latência da câmera do portão/garagem via VMS.
+
+### 3. 🎨 Stream Deck 2.0 (Customização Dinâmica)
+* **Editor Web Drag & Drop:** Interface para reorganizar, criar novos botões e escolher cores sem necessidade de alterar arquivos de código.
+* **Páginas Ilimitadas:** Paginação dinâmica e criação de pastas/subpastas de atalhos.
+
+---
 *Documentação oficial do projeto Stream Deck Mobile.*
+

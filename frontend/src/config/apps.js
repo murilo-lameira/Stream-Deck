@@ -13,6 +13,8 @@ import blitzIcon from '../assets/icons/blitz.svg';
 import githubIcon from '../assets/icons/github.svg';
 import youtubeIcon from '../assets/icons/youtube.svg';
 import logitechIcon from '../assets/icons/logitech.svg';
+import vmsIcon from '../assets/icons/vms.svg';
+import checkupIcon from '../assets/icons/checkup.svg';
 
 import mediaPlayIcon from '../assets/icons/media-play.svg';
 import mediaNextIcon from '../assets/icons/media-next.svg';
@@ -42,14 +44,16 @@ export const MEDIA_APPS = [
   { id: 'shutdown_pc',         name: 'Desligar PC', icon: powerIcon,     color: '#ff4444' },
 ];
 
-// Página 3: Ferramentas e Jogos
+// Página 3: Ferramentas, Jogos & Monitoramento (8 botões - Grade 2x4)
 export const PAGE3_APPS = [
-  { id: 'obs',    name: 'OBS Studio', icon: obsIcon,      color: '#ffffff' },
-  { id: 'github', name: 'GitHub',     icon: githubIcon,   color: '#ffffff' },
-  { id: 'ghub',   name: 'G HUB',      icon: logitechIcon, color: '#00B8FC' },
-  { id: 'lol',    name: 'League',     icon: lolIcon,      color: '#D4AF37' },
-  { id: 'steam',  name: 'Steam',      icon: steamIcon,    color: '#66c0f4' },
-  { id: 'blitz',  name: 'Blitz',      icon: blitzIcon,    color: '#ED1F34' },
+  { id: 'obs',     name: 'OBS Studio',  icon: obsIcon,      color: '#ffffff' },
+  { id: 'github',  name: 'GitHub',      icon: githubIcon,   color: '#ffffff' },
+  { id: 'ghub',    name: 'G HUB',       icon: logitechIcon, color: '#00B8FC' },
+  { id: 'vms',     name: 'VMS Câmeras', icon: vmsIcon,      color: '#00d2ff' },
+  { id: 'checkup', name: 'CheckUP',     icon: checkupIcon,  color: '#8C4FFF' },
+  { id: 'lol',     name: 'League',      icon: lolIcon,      color: '#D4AF37' },
+  { id: 'steam',   name: 'Steam',       icon: steamIcon,    color: '#66c0f4' },
+  { id: 'blitz',   name: 'Blitz',       icon: blitzIcon,    color: '#ED1F34' },
 ];
 
 

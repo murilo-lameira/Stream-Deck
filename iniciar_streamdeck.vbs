@@ -4,3 +4,5 @@ Set WshShell = CreateObject("WScript.Shell")
 backendCmd = "cmd.exe /c ""cd /d """"F:\Faculdade\Projetos\Stream Deck\backend"""" && venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8000"""
 WshShell.Run backendCmd, 0, False
 
+WshShell.CurrentDirectory = "F:\Faculdade\Projetos\Stream Deck\backend"
+WshShell.Run """F:\Faculdade\Projetos\Stream Deck\backend\venv\Scripts\python.exe"" -m uvicorn main:app --host 0.0.0.0 --port 8000", 0, False
