@@ -5,14 +5,17 @@ O projeto **Stream Deck Mobile** nasceu com um propósito ecológico e prático:
 Para gerenciar a complexidade e estruturar todas as etapas do desenvolvimento, utilizamos o **Obsidian como nosso "Segundo Cérebro"**. Todo o planejamento, backlog de tarefas, problemas resolvidos e decisões de arquitetura foram armazenados e organizados em um *Vault* dedicado, o que garantiu uma evolução limpa e escalável para o projeto.
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Python_3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI_2.0-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/WebSockets-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebSockets" />
+  <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" alt="PWA" />
-  <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
-  <img src="https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Google Gemini" />
-  <img src="https://img.shields.io/badge/Obsidian-483699?style=for-the-badge&logo=obsidian&logoColor=white" alt="Obsidian" />
+  <img src="https://img.shields.io/badge/PWA_AMOLED-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/Windows_11_API-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/mDNS_ZeroConf-0A84FF?style=for-the-badge&logo=apple&logoColor=white" alt="mDNS" />
+  <img src="https://img.shields.io/badge/Obsidian_Vault-483699?style=for-the-badge&logo=obsidian&logoColor=white" alt="Obsidian" />
+  <img src="https://img.shields.io/badge/AI_Agents_Squad-FF6F00?style=for-the-badge&logo=robotframework&logoColor=white" alt="AI Agents" />
+  <img src="https://img.shields.io/badge/n8n_Ready-EA4B71?style=for-the-badge&logo=n8n&logoColor=white" alt="n8n" />
 </div>
 <br>
 
@@ -87,38 +90,40 @@ Localizado na pasta `frontend/`, a aplicação foi estruturada como um **Progres
 
 ---
 
-## 📂 Estrutura de Diretórios Final
+## 📂 Estrutura de Diretórios (Modular 2.0)
 
 ```text
 Stream Deck/
 ├── backend/
-│   ├── venv/                     # Ambiente virtual Python
-│   ├── .env                      # Variáveis locais (AUTH_TOKEN, HOST, PORT)
-│   ├── .env.example              # Exemplo de configuração
+│   ├── managers/                 # connection_manager.py (Broadcast seguro)
+│   ├── routers/                  # deck_router.py (WebSockets e endpoints)
+│   ├── services/                 # network_service, system_service, media_service
+│   ├── apps_config.py            # Executáveis Windows e foco inteligente
+│   ├── main.py                   # FastAPI unificado + Orquestrador de Agentes
 │   ├── requirements.txt          # Dependências Python
-│   ├── apps_config.py            # Mapeamento de atalhos e executáveis
-│   ├── audio_service.py          # Controle de volume e microfone (pycaw)
-│   ├── main.py                   # Servidor FastAPI, WebSockets e mDNS
-│   └── test_backend.py           # Testes de handshake e comandos
+│   └── .env                      # Configuração de portas e tokens
 ├── frontend/
-│   ├── public/
-│   │   ├── favicon.svg
-│   │   ├── icon.svg              # Ícone do PWA
-│   │   └── manifest.json         # Configurações PWA (fullscreen, theme-color)
+│   ├── public/                   # Manifest PWA e ícones
 │   ├── src/
-│   │   ├── assets/               # Ícones vetoriais dos aplicativos
+│   │   ├── assets/               # Ícones vetoriais SVG (VMS, CheckUP, etc.)
 │   │   ├── components/           # DeckButton, VolumeSlider, NowPlaying, Modais
-│   │   ├── config/               # apps.js (catálogo) e constants.js
-│   │   ├── hooks/                # useWebSocket e useWakeLock
-│   │   ├── App.jsx               # Entrypoint da interface
-│   │   └── index.css             # Estilos globais e tema OLED
-│   ├── index.html                # Viewport e meta tags mobile
+│   │   ├── config/               # Catálogo de botões (apps.js)
+│   │   ├── hooks/                # useWebSocket com Heartbeat e useWakeLock
+│   │   ├── utils/                # haptics.js (Xiaomi Mi 9 vibrator API)
+│   │   └── App.jsx               # Aplicação React 19
 │   ├── package.json
 │   └── vite.config.js
-├── StreamDeck-Mi9/               # Memorial descritivo completo (Obsidian Vault)
-├── iniciar_streamdeck.vbs        # Script de inicialização silenciosa em 1 clique
-├── setup_autostart.ps1           # Script para iniciar com o Windows
-├── .gitignore                    # Regras de exclusão do Git
+├── scripts/
+│   └── pixel_agents_bridge.js    # Ponte local para o comando global 'squad'
+├── StreamDeck-Mi9/               # Segundo Cérebro no Obsidian (< 200 linhas/doc)
+│   ├── 00 - Meta/                # MAIN.md e Índice Geral
+│   ├── 01 - Arquitetura/         # Protocolos, Camadas e Pipeline de Agentes
+│   ├── 02 - Backlog/             # Histórico de Entregas e Features.md
+│   ├── 03 - Design/              # OLED Blackout, Haptics e Glassmorphism
+│   ├── 04 - Integracoes/         # Webhooks n8n e automação Alexa
+│   ├── 05 - Aplicativos/         # Catálogo de Executáveis e Regras Windows
+│   └── gemini-scribe/Prompts/    # Prompts especializados dos 5 subagentes
+├── iniciar_streamdeck.vbs        # Inicialização silenciosa do servidor
 └── README.md                     # Documentação oficial
 ```
 
@@ -152,17 +157,17 @@ cd "backend"
 
 ---
 
-## ✨ Recursos Especiais Implementados
-* **Auto-Descoberta mDNS:** Acesso direto por `streamdeck.local:8000` sem precisar digitar o IP manualmente.
-* **Now Playing Banner:** Sincronização em tempo real de metadados de música (Spotify/YouTube/Windows Media Control) no topo da tela de mídias.
-* **Controle de Microfone e Mute Global:** Mute de microfone inteligente com feedback visual dinâmico (botão fica vermelho e muda para "Mic Off").
-* **OLED Standby Mode:** Tela 100% preta de economia de bateria quando desconectado.
+## ✨ Recursos Especiais Implementados (Versão 2.0.0)
+* **Pipeline Orquestrado de Agentes com Feedback Loop:** Arquitetura autônoma (Dev, UI/UX, Revisor, QA e Documentador). O QA valida as entregas e devolve correções para Dev/UI antes que o Documentador finalize as notas no Obsidian.
+* **Detecção Inteligente de Abas e WebApps:** Suporte em tempo real para identificar **YouTube**, **Google Gemini** e **GitHub** abertos no Chrome através da Win32 API, além de apps nativos da Windows Store como **WhatsApp (`WhatsApp.Root.exe`)** e **Logitech G HUB**.
+* **LED Neon Indicador Pulsante:** Indicador verde neon no canto superior direito de cada botão para informar visualmente quais aplicativos estão em execução no computador.
 * **Auto-Descoberta mDNS & Auto-Sync de IP:** Acesso por `streamdeck.local:8000` com resolução de hostname e sincronização automática de endereço de WebSocket no PWA.
 * **Now Playing Banner com Glow Reativo:** Sincronização em tempo real de metadados de música (Spotify/YouTube/Windows Media Control) com efeito de iluminação neon no card gerado a partir da cor dominante da capa do álbum.
 * **Controle de Microfone e Mute Global:** Mute de microfone inteligente atuando em múltiplos canais simultaneamente (`eConsole` e `eCommunications`), cobrindo Discord, WhatsApp e Google Meet com feedback visual dinâmico.
-* **OLED Standby Mode:** Tela 100% preta de economia de bateria quando desconectado, com suporte a duplo toque para reconfiguração rápida.
-* **Ecossistema Integrado:** Controle de câmeras residenciais (**VMS CFTV**) e diagnóstico de hardware com o nosso projeto autônomo (**CheckUP Windows**).
-* **Design Responsivo Portrait & Landscape:** Grade e botões perfeitamente proporcionais em qualquer orientação do aparelho.
+* **OLED True Black & Standby:** Fundo preto absoluto (`#000000`) que desliga os pixels da tela AMOLED do Xiaomi Mi 9 para economia de bateria, com sensor de duplo toque.
+* **Feedback Tátil Háptico:** Vibração tátil refinada no Mi 9 em cada toque, seleção e troca de slide.
+* **Ecossistema Integrado:** Atalhos para **VMS CFTV** (com ícone dedicado de câmera) e diagnóstico de hardware com **CheckUP Windows** (com paleta púrpura `#8C4FFF`).
+* **Design Responsivo Portrait & Landscape:** Grade de 2x4 (retrato) ou 4x2 (paisagem) que se adapta dinamicamente mantendo proporções perfeitas.
 
 ---
 
