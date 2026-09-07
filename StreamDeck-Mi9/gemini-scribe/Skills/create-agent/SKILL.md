@@ -6,19 +6,17 @@ description: >-
   atribuição de ferramentas/skills modulares ou expansão do pipeline em fases de desenvolvimento.
 user-invocable: true
 metadata:
-  version: "1.1.0"
-  architecture: "ECC + OpenMAIC + Staged Loop"
+  version: "1.2.0"
+  architecture: "ECC + OpenMAIC + HITL Staged Loop"
 ---
 
 # 🤖 Create Agent Skill
 
-Esta skill define o Procedimento Operacional Padrão (SOP) para criar, parametrizar e integrar novos agentes de IA no ecossistema do **Stream Deck Mi9**. Ela combina o rigor de engenharia do **ECC (Enterprise Coding Companion)** e os princípios modulares do **OpenMAIC** com o pipeline em fases do projeto.
+Esta skill define o Procedimento Operacional Padrão (SOP) para criar, parametrizar e integrar novos agentes de IA no ecossistema do **Stream Deck Mi9**, incorporando o **Portão de Aprovação do Usuário (Human-in-the-Loop)** antes de qualquer execução técnica.
 
 ---
 
 ## 🧰 Catálogo de Skills Modulares Disponíveis
-
-Ao configurar um agente, atribua a ele apenas as skills necessárias para o seu papel:
 
 | Skill | Escopo & Utilidade | Agentes Recomendados |
 | :--- | :--- | :--- |
@@ -30,15 +28,13 @@ Ao configurar um agente, atribua a ele apenas as skills necessárias para o seu 
 
 ---
 
-## 🎯 Princípios Fundamentais (ECC + OpenMAIC)
+## 🎯 Princípios Fundamentais (ECC + OpenMAIC + HITL)
 
-1. **Fase e Momento Claros:** Todo agente pertence a uma fase explícita (Planejamento, Implementação, QA ou Docs).
-2. **Separação de Papéis vs. Habilidades:**
-   - **Persona:** Define identidade, limites e regras de atuação.
-   - **Skills:** Conhecimento procedimental e checklists executáveis.
-3. **Loop de Engenharia Rígido:**
-   $$\text{Plan (Fase 1)} \longrightarrow \text{Dev + TDD (Fase 2)} \longrightarrow \text{QA Gate (Fase 3)} \longrightarrow \text{Vault Guardian (Fase 4)}$$
-4. **Governança do Vault:** Nenhum arquivo markdown pode ultrapassar 200 linhas; codificação estritamente em UTF-8 sem BOM.
+1. **Gate de Aprovação do Usuário:** O Planejador nunca avança diretamente para a implementação sem submeter a proposta de alterações e receber o consentimento do usuário.
+2. **Separação de Papéis vs. Habilidades:** Personas cuidam de identidade e limites; Skills fornecem runbooks técnicos.
+3. **Loop de 5 Fases:**
+   $$\text{Fase 1 (Plano)} \longrightarrow \mathbf{\text{Gate: Aprovação Usuário}} \longrightarrow \text{Fase 2 (Dev/TDD)} \longrightarrow \text{Fase 3 (QA Gate)} \longrightarrow \text{Fase 4 (Docs)}$$
+4. **Governança do Vault:** Limite estrito de < 200 linhas por arquivo markdown em UTF-8 sem BOM.
 
 ---
 
@@ -54,7 +50,7 @@ graph TD
 ### Etapa 1: Definição de Escopo e Fase
 - **Identificador:** `kebab-case` (ex: `security-auditor`, `audio-specialist`).
 - **Fase de Atuação:** `Fase 1 (Arquitetura)`, `Fase 2 (Dev/UI)`, `Fase 3 (QA)` ou `Fase 4 (Docs)`.
-- **Skills Associadas:** Selecionadas da tabela acima.
+- **Skills Associadas:** Mapeadas na tabela de skills.
 
 ---
 
@@ -70,7 +66,7 @@ override_system_prompt: false
 phase: "<Fase 1 | 2 | 3 | 4>"
 tags: ["<tag1>", "<tag2>"]
 skills_assigned: ["tdd-workflow", "api-design"]
-tools_allowed: ["read_file", "write_to_file", "run_command"]
+tools_allowed: ["read_file", "write_file", "run_command"]
 ---
 
 Você é o <Nome do Agente> do Stream Deck Mobile.
@@ -86,12 +82,12 @@ Diretrizes Estritas:
 
 ### Etapa 3: Registro na Governança e Orquestração
 1. Salve o prompt na pasta `StreamDeck-Mi9/gemini-scribe/Prompts/<agent-id>.md`.
-2. Atualize o fluxo de fases em `StreamDeck-Mi9/01 - Arquitetura/Orquestracao de Agentes e Loop de Feedback.md`.
-3. Sincronize o papel no `squad-bridge.js` se aplicável.
+2. Atualize o fluxo em `StreamDeck-Mi9/01 - Arquitetura/Orquestracao de Agentes e Loop de Feedback.md`.
+3. Sincronize no `squad-bridge.js`.
 
 ---
 
 ### Etapa 4: Validação e Feedback Loop
 1. Verifique a sintaxe YAML e integridade do UTF-8.
-2. Certifique-se de que a saída respeite o handoff entre fases.
+2. Certifique-se do handoff de retorno em caso de falha.
 3. Realize commit e push para o repositório Git.

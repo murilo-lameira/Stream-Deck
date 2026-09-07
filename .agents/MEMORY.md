@@ -17,7 +17,17 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 
 ---
 
-## ⚠️ 2. Gotchas e Lições do Windows 11 (Crítico)
+## 🛑 2. Regra de Ouro: Portão de Aprovação do Usuário (HITL Gate)
+
+- **Princípio:** Antes de iniciar qualquer alteração ou criação de código de produção, o agente deve apresentar ao usuário um resumo claro contendo:
+  1. Arquivos afetados (`[MODIFY]`, `[NEW]`, `[DELETE]`).
+  2. Endpoints / funções adicionadas.
+  3. Riscos ou dependências.
+- **Ação:** Aguardar a aprovação explícita do usuário antes de disparar a Fase 2 (Implementação).
+
+---
+
+## ⚠️ 3. Gotchas e Lições do Windows 11 (Crítico)
 
 1. **Chamadas Bloqueantes de Sistema:**
    - Funções do Pycaw (`IAudioEndpointVolume`), WinRT (`GlobalSystemMediaTransportControlsSessionManager`) e Win32 (`ctypes.windll.user32`) são síncronas e bloqueantes.
@@ -33,7 +43,7 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 
 ---
 
-## 🏛️ 3. Governança do Cofre Obsidian (`StreamDeck-Mi9/`)
+## 🏛️ 4. Governança do Cofre Obsidian (`StreamDeck-Mi9/`)
 
 - **Regra de Ouro de Tamanho:** NENHUM arquivo markdown (`.md`) pode ultrapassar **200 linhas**.
 - **Encoding Obrigatório:** Salvar sempre em **UTF-8 sem BOM**.
@@ -49,17 +59,17 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 
 ---
 
-## 🤖 4. Ciclo de Vida dos Agentes & Skills Ativas
+## 🤖 5. Ciclo de Vida dos Agentes & Loop de 5 Fases
 
-- **Pipeline em Fases (Staged Loop):**
-  $$\text{Fase 1 (Planejamento + api-design)} \longrightarrow \text{Fase 2 (Dev + tdd-workflow)} \longrightarrow \text{Fase 3 (QA + security-review)} \longrightarrow \text{Fase 4 (Vault Guardian)}$$
+- **Pipeline em Fases:**
+  $$\text{Fase 1 (Plano)} \longrightarrow \mathbf{\text{Gate: Aprovação do Usuário}} \longrightarrow \text{Fase 2 (Dev + TDD)} \longrightarrow \text{Fase 3 (QA + Security)} \longrightarrow \text{Fase 4 (Docs)}$$
 - **Princípio da Economia de Contexto:**
   - Documentadores e QAs só atuam nas etapas finais.
   - Se o QA encontrar falhas no código ou UI, rejeita e devolve o chamado para o Dev correspondente com o diagnóstico antes de registrar no Obsidian.
 
 ---
 
-## 🧰 5. Skills Modulares Registradas no Workspace
+## 🧰 6. Skills Modulares Registradas no Workspace
 
 | Skill | Finalidade Principal |
 | :--- | :--- |
