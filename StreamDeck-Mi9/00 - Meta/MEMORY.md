@@ -2,6 +2,11 @@
 
 Este arquivo preserva as decisões arquiteturais, preferências operacionais, armadilhas técnicas resolvidas (gotchas) e lições aprendidas entre sessões de agentes.
 
+- 🧭 **Bússola StreamDeck:** [[02 - Projetos/StreamDeck-Mi9/00 - Meta/MAIN|MAIN StreamDeck]] • [[02 - Projetos/StreamDeck-Mi9/00 - Meta/Índice Geral|Índice Geral]]
+- 💻 **Central de Projetos:** [[00 - Central/MOC - Projetos|MOC - Projetos]]
+- 🧠 **Memória Central Big Brain:** [[MEMORY|Memory Bank Big Brain]]
+- 🧩 **Template de Agentes:** [[agent-template|agent-template.md]]
+
 ---
 
 ## 📌 1. Visão Geral e Stack do Projeto

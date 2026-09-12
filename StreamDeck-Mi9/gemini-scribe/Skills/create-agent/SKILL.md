@@ -56,6 +56,7 @@ graph TD
 
 ### Etapa 2: Geração do Prompt de Sistema
 Crie o prompt em `StreamDeck-Mi9/gemini-scribe/Prompts/<agent-id>.md`:
+Crie o prompt em `StreamDeck-Mi9/gemini-scribe/Prompts/<agent-id>.md` (utilize o modelo em [[agent-template|Template de Agente Especializado]]):
 
 ```markdown
 ---

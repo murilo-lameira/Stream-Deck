@@ -1,5 +1,12 @@
 # 🧩 Template de Agente Especializado
 
+Documento de referência para criação de novas personas e subagentes modulares.
+- 🧰 **Skill Relacionada:** [[02 - Projetos/StreamDeck-Mi9/gemini-scribe/Skills/create-agent/SKILL|Skill Create-Agent]]
+- 🧠 **Governança Global:** [[AGENTS|AGENTS.md Big Brain]]
+- 📱 **StreamDeck:** [[02 - Projetos/StreamDeck-Mi9/00 - Meta/MAIN|MAIN StreamDeck]] • [[02 - Projetos/StreamDeck-Mi9/00 - Meta/MEMORY|MEMORY StreamDeck]]
+
+---
+
 Utilize este template base para criar novos agentes:
 
 ```markdown

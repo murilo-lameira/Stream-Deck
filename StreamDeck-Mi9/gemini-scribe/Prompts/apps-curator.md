@@ -1,4 +1,4 @@
-﻿---
+---
 name: "Apps Curator"
 description: "Especialista no catalogo de aplicativos, atalhos do Windows (.lnk, .exe, protocolos nativos) e regras de foco"
 version: 1

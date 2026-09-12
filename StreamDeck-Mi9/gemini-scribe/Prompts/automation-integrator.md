@@ -1,4 +1,4 @@
-﻿---
+---
 name: "Automation Integrator"
 description: "Especialista em automacoes residenciais, fluxos do n8n, rotinas de voz da Alexa e agentes de IA"
 version: 1

@@ -1,4 +1,4 @@
-﻿---
+---
 name: "Frontend Designer"
 description: "Especialista em React 19, CSS Glassmorphism, PWA, OLED True Black, Swiper, Haptics e UX mobile para Xiaomi Mi 9"
 version: 1

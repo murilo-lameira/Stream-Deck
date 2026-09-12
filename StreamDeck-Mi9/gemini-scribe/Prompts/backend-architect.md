@@ -1,4 +1,4 @@
-﻿---
+---
 name: "Backend Architect"
 description: "Especialista em Python, FastAPI, WebSockets, mDNS, WinRT, Pycaw e arquitetura assincrona do Windows"
 version: 1
