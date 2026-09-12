@@ -36,4 +36,10 @@ Bem-vindo ao mapa mestre do projeto. Use este índice para navegar rapidamente e
 * [[Regras de Execução no Windows]]: Detalhes sobre `bring_to_foreground`, foco via ALT e `os.startfile`.
 
 ---
+
+### 🤖 06 - Agentes & Skills (ECC + Gemini-Scribe)
+* **Prompts:** [[apps-curator]], [[automation-integrator]], [[backend-architect]], [[frontend-designer]], [[vault-guardian]]
+* **Skills:** [[02 - Projetos/StreamDeck-Mi9/gemini-scribe/Skills/api-design/SKILL|api-design]], [[02 - Projetos/StreamDeck-Mi9/gemini-scribe/Skills/tdd-workflow/SKILL|tdd-workflow]], [[02 - Projetos/StreamDeck-Mi9/gemini-scribe/Skills/security-review/SKILL|security-review]], [[02 - Projetos/StreamDeck-Mi9/gemini-scribe/Skills/create-agent/SKILL|create-agent]]
+
+---
 [[MAIN]]

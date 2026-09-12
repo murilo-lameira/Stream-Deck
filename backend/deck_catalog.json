@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "pages": [
+    {
+      "id": "page_apps",
+      "name": "Principais",
+      "type": "grid",
+      "items": [
+        { "id": "vscode",   "name": "VS Code",    "icon": "vscode",   "color": "#007ACC" },
+        { "id": "discord",  "name": "Discord",    "icon": "discord",  "color": "#5865F2" },
+        { "id": "whatsapp", "name": "WhatsApp",   "icon": "whatsapp", "color": "#25D366" },
+        { "id": "chrome",   "name": "Chrome",     "icon": "chrome",   "color": "#EA4335" },
+        { "id": "spotify",  "name": "Spotify",    "icon": "spotify",  "color": "#1DB954" },
+        { "id": "gemini",   "name": "Gemini",     "icon": "gemini",   "color": "#8E24AA" },
+        { "id": "youtube",  "name": "YouTube",    "icon": "youtube",  "color": "#FF0000" },
+        { "id": "obsidian", "name": "Obsidian",   "icon": "obsidian", "color": "#7c3aed" }
+      ]
+    },
+    {
+      "id": "page_media",
+      "name": "Mídia & Volume",
+      "type": "media",
+      "items": [
+        { "id": "sys_media_prev",      "name": "Anterior",    "icon": "media-prev",  "color": "#10b981" },
+        { "id": "sys_media_playpause", "name": "Play/Pause",  "icon": "media-play",  "color": "#10b981" },
+        { "id": "sys_media_next",      "name": "Próxima",     "icon": "media-next",  "color": "#10b981" },
+        { "id": "sys_vol_mute",        "name": "Mutar",       "icon": "vol-mute",    "color": "#ef4444" },
+        { "id": "sys_mic_mute",        "name": "Microfone",   "icon": "mic",         "color": "#f59e0b" },
+        { "id": "shutdown_pc",         "name": "Desligar PC", "icon": "power",       "color": "#ff4444" }
+      ]
+    },
+    {
+      "id": "page_tools",
+      "name": "Ferramentas & Jogos",
+      "type": "grid",
+      "items": [
+        { "id": "obs",     "name": "OBS Studio",  "icon": "obs",               "color": "#ffffff" },
+        { "id": "github",  "name": "GitHub",      "icon": "github",            "color": "#ffffff" },
+        { "id": "ghub",    "name": "G HUB",       "icon": "logitech",          "color": "#00B8FC" },
+        { "id": "vms",     "name": "VMS Câmeras", "icon": "vms",               "color": "#00d2ff" },
+        { "id": "checkup", "name": "CheckUP",     "icon": "checkup",           "color": "#8C4FFF" },
+        { "id": "lol",     "name": "League",      "icon": "league-of-legends", "color": "#D4AF37" },
+        { "id": "steam",   "name": "Steam",       "icon": "steam",             "color": "#66c0f4" },
+        { "id": "blitz",   "name": "Blitz",       "icon": "blitz",             "color": "#ED1F34" }
+      ]
+    }
+  ]
+}
+

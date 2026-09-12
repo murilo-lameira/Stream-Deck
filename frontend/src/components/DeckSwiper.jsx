@@ -17,9 +17,19 @@ export function DeckSwiper({
   volume,
   systemStatus,
   runningApps,
+  catalog,
   onVolumeChange,
   onToggleMute,
 }) {
+  // Constrói páginas dinâmicas a partir do catálogo do backend ou usa fallback
+  const pages = (catalog && Array.isArray(catalog.pages) && catalog.pages.length > 0)
+    ? catalog.pages
+    : [
+        { id: 'page_apps', name: 'Principais', type: 'grid', items: PAGE1_APPS },
+        { id: 'page_media', name: 'Mídia & Volume', type: 'media', items: MEDIA_APPS },
+        { id: 'page_tools', name: 'Ferramentas & Jogos', type: 'grid', items: PAGE3_APPS }
+      ];
+
   return (
     <div className="swiper-container-wrapper">
       <Swiper
@@ -54,79 +64,70 @@ export function DeckSwiper({
         preventClicksPropagation={false}
         touchStartPreventDefault={false}
       >
-        {/* Slide 1: Aplicativos Principais */}
-        <SwiperSlide className="deck-slide">
-          <div className="grid-container">
-            {PAGE1_APPS.map((app) => (
-              <DeckButton
-                key={app.id}
-                app={app}
-                onLaunch={onLaunch}
-                disabled={disabled}
-                isRunning={runningApps?.includes(app.id)}
-              />
-            ))}
-          </div>
-        </SwiperSlide>
+        {pages.map((page) => {
+          if (page.type === 'media') {
+            return (
+              <SwiperSlide key={page.id} className="deck-slide">
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
+                  <NowPlaying 
+                    title={systemStatus?.nowPlaying?.title} 
+                    artist={systemStatus?.nowPlaying?.artist} 
+                    sourceApp={systemStatus?.nowPlaying?.source_app}
+                    isPlaying={systemStatus?.nowPlaying?.is_playing}
+                    thumbnail={systemStatus?.nowPlaying?.thumbnail}
+                  />
+                  <div className="media-screen-grid">
+                    <div className="media-slider-slot">
+                      <VolumeSlider
+                        volume={volume}
+                        onVolumeChange={onVolumeChange}
+                        onToggleMute={onToggleMute}
+                        disabled={disabled}
+                      />
+                    </div>
 
-        {/* Slide 2: Central de Controle & Mídia */}
-        <SwiperSlide className="deck-slide">
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
-            <NowPlaying 
-              title={systemStatus?.nowPlaying?.title} 
-              artist={systemStatus?.nowPlaying?.artist} 
-              sourceApp={systemStatus?.nowPlaying?.source_app}
-              isPlaying={systemStatus?.nowPlaying?.is_playing}
-              thumbnail={systemStatus?.nowPlaying?.thumbnail}
-            />
-            <div className="media-screen-grid">
-              <div className="media-slider-slot">
-                <VolumeSlider
-                  volume={volume}
-                  onVolumeChange={onVolumeChange}
-                  onToggleMute={onToggleMute}
-                  disabled={disabled}
-                />
+                    <div className="media-buttons-column">
+                      {page.items.map((app) => {
+                        const isMicApp = app.id === 'sys_mic_mute';
+                        const dynamicApp = isMicApp && systemStatus?.micMuted 
+                          ? { ...app, color: '#ef4444', name: 'Mic Off' } 
+                          : app;
+                          
+                        return (
+                          <DeckButton
+                            key={dynamicApp.id}
+                            app={dynamicApp}
+                            onLaunch={onLaunch}
+                            disabled={disabled}
+                            isRunning={runningApps?.includes(app.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </SwiperSlide>
+            );
+          }
+
+          // Página padrão do tipo 'grid' (suporta qualquer número de páginas adicionais)
+          return (
+            <SwiperSlide key={page.id} className="deck-slide">
+              <div className="grid-container">
+                {page.items.map((app) => (
+                  <DeckButton
+                    key={app.id}
+                    app={app}
+                    onLaunch={onLaunch}
+                    disabled={disabled}
+                    isRunning={runningApps?.includes(app.id)}
+                  />
+                ))}
               </div>
-
-              <div className="media-buttons-column">
-                {MEDIA_APPS.map((app) => {
-                  const isMicApp = app.id === 'sys_mic_mute';
-                  const dynamicApp = isMicApp && systemStatus?.micMuted 
-                    ? { ...app, color: '#ef4444', name: 'Mic Off' } 
-                    : app;
-                    
-                  return (
-                    <DeckButton
-                      key={dynamicApp.id}
-                      app={dynamicApp}
-                      onLaunch={onLaunch}
-                      disabled={disabled}
-                      isRunning={runningApps?.includes(app.id)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </SwiperSlide>
-
-        {/* Slide 3: Ferramentas e Jogos */}
-        <SwiperSlide className="deck-slide">
-          <div className="grid-container">
-            {PAGE3_APPS.map((app) => (
-              <DeckButton
-                key={app.id}
-                app={app}
-                onLaunch={onLaunch}
-                disabled={disabled}
-                isRunning={runningApps?.includes(app.id)}
-              />
-            ))}
-          </div>
-        </SwiperSlide>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </div>
   );
 }
-

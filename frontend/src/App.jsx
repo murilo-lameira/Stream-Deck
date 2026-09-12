@@ -53,13 +53,25 @@ export function App() {
     volume, 
     systemStatus,
     runningApps,
+    catalog,
     changeVolume, 
-    toggleMute, 
-    reconnect 
+    toggleMute 
   } = useWebSocket(
     wsUrl,
     authToken
   );
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    if (type === 'success') {
+      hapticFeedback.success();
+    } else if (type === 'error') {
+      hapticFeedback.warning();
+    }
+    setTimeout(() => {
+      setToast(null);
+    }, 2800);
+  };
 
   // Monitora feedback de mensagens do servidor
   useEffect(() => {
@@ -75,18 +87,6 @@ export function App() {
       showToast('Conectado e Autenticado!', 'success');
     }
   }, [lastMessage]);
-
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
-    if (type === 'success') {
-      hapticFeedback.success();
-    } else if (type === 'error') {
-      hapticFeedback.warning();
-    }
-    setTimeout(() => {
-      setToast(null);
-    }, 2800);
-  };
 
   const handleLaunch = (appId) => {
     if (appId === 'shutdown_pc') {
@@ -216,6 +216,7 @@ export function App() {
           volume={volume}
           systemStatus={systemStatus}
           runningApps={runningApps}
+          catalog={catalog}
           onVolumeChange={changeVolume}
           onToggleMute={toggleMute}
         />

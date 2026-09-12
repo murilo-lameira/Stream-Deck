@@ -1,5 +1,6 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { hapticFeedback } from '../utils/haptics';
+import { resolveIcon } from '../utils/iconRegistry';
 
 export function DeckButton({ app, onLaunch, disabled, isRunning }) {
   const [isPressed, setIsPressed] = useState(false);
@@ -9,7 +10,7 @@ export function DeckButton({ app, onLaunch, disabled, isRunning }) {
     e.preventDefault();
     if (disabled) return;
 
-    // Feedback haptico padronizado para o Xiaomi Mi 9
+    // Feedback háptico padronizado para o Xiaomi Mi 9
     hapticFeedback.light();
 
     setJustLaunched(true);
@@ -17,6 +18,8 @@ export function DeckButton({ app, onLaunch, disabled, isRunning }) {
 
     onLaunch(app.id);
   };
+
+  const resolvedIcon = typeof app.icon === 'string' ? resolveIcon(app.icon) : app.icon;
 
   return (
     <button
@@ -39,17 +42,15 @@ export function DeckButton({ app, onLaunch, disabled, isRunning }) {
       <div className="button-glow"></div>
       <div className="button-content">
         <div className="icon-container">
-          {app.icon && (
-            typeof app.icon === 'string' ? (
-              <img 
-                src={app.icon} 
-                alt={`${app.name} icon`} 
-                className="app-icon" 
-              />
-            ) : (
-              <app.icon className="app-icon" size={38} />
-            )
-          )}
+          {typeof resolvedIcon === 'string' ? (
+            <img 
+              src={resolvedIcon} 
+              alt={`${app.name} icon`} 
+              className="app-icon" 
+            />
+          ) : typeof resolvedIcon === 'function' ? (
+            React.createElement(resolvedIcon, { className: 'app-icon', size: 38 })
+          ) : null}
         </div>
         <span className="app-name">{app.name}</span>
         {app.category && <span className="app-category">{app.category}</span>}

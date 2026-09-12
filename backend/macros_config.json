@@ -1,0 +1,23 @@
+{
+  "study_mode": {
+    "name": "Modo Estudo / Trabalho",
+    "description": "Abre VS Code, Obsidian, ajusta volume em 30% e muta o microfone",
+    "steps": [
+      { "action": "open", "app": "vscode" },
+      { "action": "open", "app": "obsidian" },
+      { "action": "set_volume", "level": 30 },
+      { "action": "set_mic_mute", "muted": true }
+    ]
+  },
+  "gaming_mode": {
+    "name": "Modo Jogos / Streaming",
+    "description": "Abre Discord, G HUB, desmuta microfone e ajusta volume em 65%",
+    "steps": [
+      { "action": "open", "app": "discord" },
+      { "action": "open", "app": "ghub" },
+      { "action": "set_volume", "level": 65 },
+      { "action": "set_mic_mute", "muted": false }
+    ]
+  }
+}
+

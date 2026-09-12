@@ -8,6 +8,7 @@ export function useWebSocket(url, authToken) {
   const [volume, setVolumeState] = useState({ level: 50, muted: false });
   const [systemStatus, setSystemStatus] = useState({ nowPlaying: null, micMuted: false });
   const [runningApps, setRunningApps] = useState([]);
+  const [catalog, setCatalog] = useState(null);
   
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
@@ -29,6 +30,8 @@ export function useWebSocket(url, authToken) {
     }
   };
 
+  const connectRef = useRef(null);
+
   const scheduleReconnect = useCallback(() => {
     clearReconnectTimer();
     clearHeartbeatTimer();
@@ -36,11 +39,11 @@ export function useWebSocket(url, authToken) {
     
     setStatus('RECONNECTING');
     reconnectTimerRef.current = setTimeout(() => {
-      if (!isUnmountedRef.current) {
-        connect(true);
+      if (!isUnmountedRef.current && connectRef.current) {
+        connectRef.current(true);
       }
     }, 2500); // Tentar reconectar a cada 2.5 segundos
-  }, [url, authToken]);
+  }, []);
 
   const connect = useCallback((isRetry = false) => {
     clearReconnectTimer();
@@ -53,7 +56,7 @@ export function useWebSocket(url, authToken) {
       wsRef.current.onclose = null;
       try {
         wsRef.current.close();
-      } catch (_e) {}
+      } catch {}
       wsRef.current = null;
     }
 
@@ -88,7 +91,7 @@ export function useWebSocket(url, authToken) {
             // Se faz mais de 25 segundos que o servidor nao responde nada, socket esta zumbi
             if (Date.now() - lastActivityRef.current > 25000) {
               console.warn('Conexao WebSocket inativa detectada (sem resposta do servidor). Forcando reconexao.');
-              try { ws.close(); } catch (_e) {}
+              try { ws.close(); } catch {}
             }
           }
         }, 15000);
@@ -109,6 +112,13 @@ export function useWebSocket(url, authToken) {
             }
             if (data.running_apps) {
               setRunningApps(data.running_apps);
+            }
+            if (data.catalog) {
+              setCatalog(data.catalog);
+            }
+          } else if (data.type === 'catalog_updated') {
+            if (data.catalog) {
+              setCatalog(data.catalog);
             }
           } else if (data.type === 'volume_state') {
             setVolumeState({ level: data.level, muted: data.muted });
@@ -155,6 +165,10 @@ export function useWebSocket(url, authToken) {
       scheduleReconnect();
     }
   }, [url, authToken, scheduleReconnect]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   useEffect(() => {
     isUnmountedRef.current = false;
@@ -242,6 +256,7 @@ export function useWebSocket(url, authToken) {
     volume,
     systemStatus,
     runningApps,
+    catalog,
     changeVolume,
     toggleMute,
     reconnect: connect

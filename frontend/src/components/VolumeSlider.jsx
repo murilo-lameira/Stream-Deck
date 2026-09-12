@@ -19,7 +19,7 @@ export function VolumeSlider({ volume, onVolumeChange, onToggleMute, disabled })
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
       try {
         window.navigator.vibrate(ms);
-      } catch (e) {}
+      } catch {}
     }
   };
 
@@ -118,7 +118,7 @@ export function VolumeSlider({ volume, onVolumeChange, onToggleMute, disabled })
         </div>
 
         {/* Ícone no rodapé da cápsula */}
-        <div className="ios-volume-icon-wrapper">
+        <div className="ios-volume-icon-wrapper" onClick={handleIconClick}>
           {renderIcon('volume-speaker-icon')}
         </div>
       </div>

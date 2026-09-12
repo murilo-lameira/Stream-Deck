@@ -123,3 +123,22 @@ def toggle_mic_mute() -> bool:
         logger.error(f"Erro ao alternar microfone: {e}")
         return False
 
+def set_mic_mute_state(target_muted: bool) -> bool:
+    """Define explicitamente o estado de mudo do microfone em todos os endpoints."""
+    try:
+        vols = _get_capture_volumes()
+        if not vols:
+            return False
+        val = 1 if target_muted else 0
+        for vol in vols:
+            try:
+                vol.SetMute(val, None)
+            except Exception:
+                pass
+        logger.info(f"Estado do microfone definido para: {'mutado' if target_muted else 'desmutado'}")
+        return target_muted
+    except Exception as e:
+        logger.error(f"Erro ao definir mudo do microfone: {e}")
+        return False
+
+

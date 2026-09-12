@@ -106,7 +106,6 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
         </button>
         <button 
           className="btn-settings-icon" 
-          onClick={onToggleTheme} 
           onClick={() => {
             hapticFeedback.medium();
             onToggleTheme();
@@ -118,7 +117,6 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
         </button>
         <button 
           className="btn-settings-icon" 
-          onClick={onOpenSettings} 
           onClick={() => {
             hapticFeedback.light();
             onOpenSettings();

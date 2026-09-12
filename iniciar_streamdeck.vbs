@@ -1,8 +1,14 @@
 Set WshShell = CreateObject("WScript.Shell")
+Set FSO = CreateObject("Scripting.FileSystemObject")
 
-' Iniciar o backend (FastAPI/Uvicorn) em processo oculto (0)
-backendCmd = "cmd.exe /c ""cd /d """"F:\Faculdade\Projetos\Stream Deck\backend"""" && venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8000"""
-WshShell.Run backendCmd, 0, False
+' Obtém diretório do projeto dinamicamente (portável para qualquer pasta)
+scriptDir = FSO.GetParentFolderName(WScript.ScriptFullName)
+backendDir = FSO.BuildPath(scriptDir, "backend")
+pythonExe = FSO.BuildPath(backendDir, "venv\Scripts\python.exe")
 
-WshShell.CurrentDirectory = "F:\Faculdade\Projetos\Stream Deck\backend"
-WshShell.Run """F:\Faculdade\Projetos\Stream Deck\backend\venv\Scripts\python.exe"" -m uvicorn main:app --host 0.0.0.0 --port 8000", 0, False
+' Define diretório de trabalho no backend
+WshShell.CurrentDirectory = backendDir
+
+' Iniciar o backend (FastAPI/Uvicorn) em processo único oculto (0)
+cmd = """" & pythonExe & """ -m uvicorn main:app --host 0.0.0.0 --port 8000"
+WshShell.Run cmd, 0, False

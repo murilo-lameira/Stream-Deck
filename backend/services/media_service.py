@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import base64
 import logging
 import threading
@@ -113,3 +113,69 @@ async def fetch_media_info() -> Dict[str, Any]:
     except Exception as e:
         logger.debug(f"Timeout/erro na leitura de mídia: {e}")
         return result
+
+async def control_media_action(action: str) -> bool:
+    """
+    Controla a reprodução de mídia diretamente via WinRT API na sessão ativa.
+    Ações suportadas: 'play_pause', 'next', 'prev' / 'previous', ou sys_media_*.
+    Retorna True se o comando foi aceito pelo player, False caso contrário.
+    """
+    if not _media_thread_loop or not MediaManager:
+        return False
+
+    async def _do():
+        try:
+            mgr = await MediaManager.request_async()
+            session = None
+            
+            # Prioridade 1: sessão tocando no momento
+            all_sessions = mgr.get_sessions()
+            for s in all_sessions:
+                try:
+                    pb = s.get_playback_info()
+                    if pb and PlaybackStatus and pb.playback_status == PlaybackStatus.PLAYING:
+                        session = s
+                        break
+                except Exception:
+                    pass
+
+            # Prioridade 2: sessão atual do Windows
+            if not session:
+                session = mgr.get_current_session()
+
+            if not session:
+                return False
+
+            act = action.lower()
+            if act in ("play_pause", "sys_media_playpause"):
+                return await asyncio.wait_for(session.try_toggle_play_pause_async(), timeout=2.0)
+            elif act in ("next", "sys_media_next"):
+                return await asyncio.wait_for(session.try_skip_next_async(), timeout=2.0)
+            elif act in ("prev", "previous", "sys_media_prev"):
+                return await asyncio.wait_for(session.try_skip_previous_async(), timeout=2.0)
+
+            return False
+        except Exception as e:
+            logger.debug(f"Falha ao executar controle WinRT '{action}': {e}")
+            return False
+
+    future = asyncio.run_coroutine_threadsafe(_do(), _media_thread_loop)
+    try:
+        return await asyncio.get_event_loop().run_in_executor(None, lambda: future.result(timeout=4))
+    except Exception as e:
+        logger.debug(f"Timeout no controle de mídia WinRT: {e}")
+        return False
+
+def control_media_action_sync(action: str) -> bool:
+    """Versão síncrona de controle de mídia com timeout seguro."""
+    if not _media_thread_loop or not MediaManager:
+        return False
+    try:
+        import concurrent.futures
+        coro = control_media_action(action)
+        future = asyncio.run_coroutine_threadsafe(coro, _media_thread_loop)
+        return future.result(timeout=3.0)
+    except Exception as e:
+        logger.debug(f"Erro no controle síncrono de mídia: {e}")
+        return False
+

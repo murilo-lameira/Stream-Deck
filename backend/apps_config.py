@@ -62,7 +62,10 @@ APPS_MAP: Dict[str, List[str]] = {
         os.path.expandvars(r"%PROGRAMFILES%\VMS\VMS.exe")
     ],
     "checkup": [
-        r"F:\Faculdade\Projetos\Projeto CheckUP\dist\CheckUP Windows 1.2.0.exe"
+        os.getenv(
+            "CHECKUP_EXE_PATH",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "Projeto CheckUP", "dist", "CheckUP Windows 1.2.0.exe"))
+        )
     ]
 }
 
@@ -111,9 +114,9 @@ def bring_to_foreground(target: str, is_window_title: bool = False) -> bool:
         SW_RESTORE = 9
         GW_OWNER = 4
         found_hwnd = None
-        target_lower = target.lower()
 
         if is_window_title:
+            target_lower = str(target).lower()
             def enum_title_proc(hwnd, _lParam):
                 nonlocal found_hwnd
                 if not user32.IsWindowVisible(hwnd):
@@ -198,6 +201,16 @@ def launch_app(app_key: str) -> bool:
 
     # Intercepta comandos nativos de mídia/volume
     if app_key in SYSTEM_KEYS:
+        # Tenta controle nativo via WinRT para comandos de mídia
+        if app_key in ("sys_media_playpause", "sys_media_next", "sys_media_prev"):
+            try:
+                from services.media_service import control_media_action_sync
+                if control_media_action_sync(app_key):
+                    logger.info(f"Comando de mídia executado via WinRT nativo: {app_key}")
+                    return True
+            except Exception as e:
+                logger.debug(f"WinRT media control indisponível, usando fallback: {e}")
+
         try:
             simulate_key(SYSTEM_KEYS[app_key])
             logger.info(f"Comando de sistema executado com sucesso: {app_key}")

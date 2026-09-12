@@ -16,16 +16,16 @@
 - [x] **2.1. Haptic Feedback (Vibração Tátil):** Vibrar o celular brevemente (`navigator.vibrate`) ao tocar em qualquer botão, simulando a sensação física de um Elgato Stream Deck.
 - [x] **2.2. Indicador Visual de App Ativo (LED/Glow):** Adicionar um LED verde neon discreto nos botões cujos programas já estiverem abertos/em execução no Windows.
 - [x] **2.3. Modo OLED True Black:** Refinar o CSS do tema escuro para preto absoluto (`#000000`), economizando bateria na tela AMOLED do Mi 9 e realçando o efeito de vidro (glassmorphism).
-- [ ] **2.4. Telemetria Rápida no Header:** Adicionar mini-widgets no topo do celular mostrando uso de CPU/RAM do PC e a latência (ping) do WebSocket.
+- [ ] **2.4. Telemetria Rápida no Header:** *(Excluído por preferência do usuário - foco em layout limpo)*
 - [x] **2.5. Transições com Física Fluida (Framer Motion):** Animações suaves estilo iOS ao trocar de página no deck e ao abrir os controles de volume.
 
 ---
 
 ## 🌐 3. Novas Integrações & Automação
-- [ ] **3.1. Integração com n8n & Alexa:**
-  - [ ] Criar aba/botões dedicados para disparar webhooks do n8n (rotinas de iluminação, cenas de estudo/game).
-  - [ ] Suporte a comandos de voz via Alexa refletindo o status no painel do Stream Deck.
+- [x] **3.1. Integração com n8n & Alexa:**
+  - [x] Endpoint seguro `/api/trigger` com Bearer Token para comandos externos e integração com Alexa/n8n.
+  - [x] Suporte a despacho de webhooks HTTP assíncronos (`call_webhook`).
 - [x] **3.2. Atalho Dedicado VMS (Câmeras de Casa):** Botão com ícone personalizado para abrir o painel de monitoramento de câmeras.
 - [x] **3.3. Atalho Dedicado Projeto Checkup:** Botão e status em tempo real do nosso projeto de checkup.
-- [ ] **3.4. Sistema de Macros / Múltiplas Ações:** Criar botões que executam sequências (ex: *"Modo Estudo"* -> Abre VS Code, abre Notion, ajusta volume em 40% e bota o microfone no mudo).
+- [x] **3.4. Sistema de Macros / Múltiplas Ações:** Motor em `macro_service.py` com sequências encadeadas (`study_mode`, `gaming_mode`).
 - [ ] **3.5. Soundboard Embutido:** Aba para disparar efeitos sonoros e memes com reprodução instantânea no PC.
