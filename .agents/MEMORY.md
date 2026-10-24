@@ -7,11 +7,11 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 ## 📌 1. Visão Geral e Stack do Projeto
 
 - **Nome:** Stream Deck Mi9 (Mobile PWA + Python Host no Windows 11).
-- **Backend:** Python (FastAPI + Uvicorn), WebSockets bidirecionais em `/ws/streamdeck`, mDNS Zeroconf para autodescoberta (`streamdeck.local:8000`).
-- **Frontend:** PWA responsivo (Vue.js + Tailwind CSS) servido estaticamente em `:8000`.
+- **Backend:** Python (FastAPI + Uvicorn), WebSockets bidirecionais em `/ws`, mDNS Zeroconf para autodescoberta (`streamdeck.local:8000`).
+- **Frontend:** PWA responsivo (React 18 + Vite + Tailwind/CSS) servido estaticamente em `:8000`.
 - **Arquitetura Backend Modular:**
-  - `backend/routers/`: Endpoints HTTP/REST (`apps.py`, `system.py`, etc.).
-  - `backend/services/`: Lógica de domínio (`audio_service.py`, `media_service.py`, `process_service.py`).
+  - `backend/routers/`: Endpoints HTTP/REST e WebSocket (`deck_router.py`).
+  - `backend/services/`: Lógica de domínio (`audio_service.py`, `media_service.py`, `system_service.py`, `macro_service.py`, `catalog_service.py`, `telemetry_service.py`).
   - `backend/managers/`: Gerenciamento de conexões e broadcast (`connection_manager.py`).
   - `backend/apps_config.py`: Catálogo de atalhos e executáveis permitidos.
 
@@ -27,18 +27,24 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 
 ---
 
-## ⚠️ 3. Gotchas e Lições do Windows 11 (Crítico)
+## ⚠️ 3. Gotchas e Lições do Windows 11 & AppSec (Crítico)
 
 1. **Chamadas Bloqueantes de Sistema:**
-   - Funções do Pycaw (`IAudioEndpointVolume`), WinRT (`GlobalSystemMediaTransportControlsSessionManager`) e Win32 (`ctypes.windll.user32`) são síncronas e bloqueantes.
+   - Funções do Pycaw (`IAudioEndpointVolume`), WinRT e Win32 (`ctypes.windll.user32`) são síncronas e bloqueantes.
    - **Regra:** Envolva SEMPRE qualquer chamada Win32/COM/Audio em `asyncio.to_thread` para não travar o loop de eventos assíncrono do FastAPI e WebSocket.
 
-2. **Nomes de Executáveis e Processos Especiais:**
+2. **Diretrizes de Segurança & Hardening (AppSec):**
+   - **Path Traversal:** No servidor estático do FastAPI, validar sempre que `realpath(target_path)` se inicia com `realpath(base_path)`.
+   - **CSWSH & WebSocket Handshake:** Inspecionar cabeçalho `Origin` contra whitelist e aplicar timeout de 5 segundos no handshake para evitar conexões zumbis (Slowloris).
+   - **SSRF:** Validar scheme e bloquear destinos loopback (`localhost`, `127.0.0.1`, `::1`) em ações que despacham requisições de rede (`call_webhook`).
+   - **Timing Attack:** Utilizar `hmac.compare_digest` para validação de tokens e segredos.
+
+3. **Nomes de Executáveis e Processos Especiais:**
    - **WhatsApp (Windows Store):** Roda sob o processo `WhatsApp.Root.exe` (não `WhatsApp.exe`).
    - **Abas do Chrome:** Detectadas inspecionando títulos de janelas associados a `chrome.exe` (ex: `YouTube`, `Google Gemini`, `GitHub`).
    - **Foco de Janelas:** Usar `ShowWindow(hwnd, SW_RESTORE)` e simular `ALT` com `keybd_event` para contornar restrições de primeiro plano no Windows 11.
 
-3. **Terminal PowerShell no Windows:**
+4. **Terminal PowerShell no Windows:**
    - Evite passar caracteres `&` soltos dentro de strings de comandos inline `python -c "..."` no PowerShell, pois causam erro de parser antes de atingir o interpretador. Use scripts scratch em arquivo quando necessário.
 
 ---
@@ -51,7 +57,7 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 - **Estrutura de Pastas:**
   - `00 - Meta/`: Bússola (`MAIN.md`), índices e governança.
   - `01 - Arquitetura/`: Protocolos, diagramas interativos (Archify) e contratos.
-  - `02 - Backlog/`: Features, roadmap e histórico de entregas.
+  - `02 - Backlog/`: Features, roadmap, histórico de entregas e auditoria (`Auditoria e Seguranca.md`).
   - `03 - Design/`: UI, layout, cores e responsividade.
   - `04 - Integracoes/`: n8n, Alexa e webhooks.
   - `05 - Aplicativos/`: Catálogo de apps e regras de execução.
@@ -78,3 +84,7 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 | **`tdd-workflow`** | Ciclo RED -> GREEN -> REFACTOR com pytest e mocks assíncronos. |
 | **`security-review`** | Auditoria de segurança, sanitização de inputs e proteção do WebSocket. |
 | **`api-design`** | Contratos REST e envelopes padronizados de WebSocket. |
+## 🚀 7. Marcos Recentes — Versão V8.8 (Conclusão do Backlog)
+- **Token Criptográfico (SEC-05):** Rotação segura via uth_service.py (secrets.token_urlsafe(32)) e pareamento zero-touch via query parameter ?token=....
+- **Rate-Limiter Drop-Oldest (PERF-03):** Controle analógico em VolumeSlider.jsx (20Hz/50ms) para eliminação de jitter em Wi-Fi.
+- **Arquitetura Modular (ARCH-01/02/03):** Desacoplamento de pps_config.py em pps_registry.py, window_service.py e process_service.py. Higienização de exceções com logger.debug em media_service.py e Command Registry Pattern no WebSocket (ACTION_HANDLERS).

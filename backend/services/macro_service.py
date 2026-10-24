@@ -9,6 +9,9 @@ from apps_config import launch_app_async
 from audio_service import set_volume_level, toggle_mute, set_mic_mute_state
 from managers.connection_manager import manager
 
+from urllib.parse import urlparse
+import ipaddress
+
 logger = logging.getLogger("streamdeck.macro")
 
 MACROS_PATH = os.path.join(os.path.dirname(__file__), "..", "macros_config.json")
@@ -78,10 +81,39 @@ async def execute_macro(macro_name: str) -> Dict[str, Any]:
     return {"status": "success", "macro": macro_name, "results": results}
 
 async def dispatch_webhook(url: str, payload: Optional[dict] = None) -> bool:
-    """Despacha um webhook HTTP POST assíncrono para o n8n ou outro serviço de automação."""
+    """Despacha um webhook HTTP POST assíncrono para o n8n ou outro serviço de automação com proteção anti-SSRF."""
     if not url:
         return False
     try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            logger.warning(f"URL de webhook rejeitada por scheme inválido ou sem host: {url}")
+            return False
+
+        hostname = parsed.hostname.lower()
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+
+        # Previne SSRF contra o próprio backend Stream Deck (porta 8000) e portas administrativas do host
+        BLOCKED_LOCAL_PORTS = {8000, 22, 23, 3389, 445}
+        is_loopback = False
+
+        if hostname in ("localhost", "127.0.0.1", "::1"):
+            is_loopback = True
+        else:
+            try:
+                ip = ipaddress.ip_address(hostname)
+                if ip.is_loopback or ip.is_unspecified or ip.is_link_local:
+                    is_loopback = True
+            except ValueError:
+                pass
+
+        if is_loopback:
+            # Bloqueia loopback direto em portas restritas do host
+            if port in BLOCKED_LOCAL_PORTS:
+                logger.warning(f"Tentativa de SSRF bloqueada para porta restrita em host loopback ({port}): {url}")
+                return False
+            logger.debug(f"Webhook local loopback aceito para serviço de automação (porta {port}): {url}")
+
         async with httpx.AsyncClient(timeout=4.0) as client:
             resp = await client.post(url, json=payload or {})
             return resp.status_code in (200, 201, 202, 204)

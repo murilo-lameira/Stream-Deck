@@ -1,0 +1,3 @@
+# Força quebras de linha Unix (LF) em arquivos Markdown para evitar inconsistências de formatação
+*.md text eol=lf
+

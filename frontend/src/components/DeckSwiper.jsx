@@ -63,6 +63,8 @@ export function DeckSwiper({
         preventClicks={false}
         preventClicksPropagation={false}
         touchStartPreventDefault={false}
+        noSwiping={true}
+        noSwipingClass="swiper-no-swiping"
       >
         {pages.map((page) => {
           if (page.type === 'media') {
@@ -75,6 +77,9 @@ export function DeckSwiper({
                     sourceApp={systemStatus?.nowPlaying?.source_app}
                     isPlaying={systemStatus?.nowPlaying?.is_playing}
                     thumbnail={systemStatus?.nowPlaying?.thumbnail}
+                    thumbnailUrl={systemStatus?.nowPlaying?.thumbnail_url}
+                    onLaunch={onLaunch}
+                    disabled={disabled}
                   />
                   <div className="media-screen-grid">
                     <div className="media-slider-slot">

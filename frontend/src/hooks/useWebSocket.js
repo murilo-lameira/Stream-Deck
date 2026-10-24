@@ -6,7 +6,7 @@ export function useWebSocket(url, authToken) {
   const [errorMessage, setErrorMessage] = useState('');
   
   const [volume, setVolumeState] = useState({ level: 50, muted: false });
-  const [systemStatus, setSystemStatus] = useState({ nowPlaying: null, micMuted: false });
+  const [systemStatus, setSystemStatus] = useState({ nowPlaying: null, micMuted: false, metrics: null });
   const [runningApps, setRunningApps] = useState([]);
   const [catalog, setCatalog] = useState(null);
   
@@ -125,7 +125,8 @@ export function useWebSocket(url, authToken) {
           } else if (data.type === 'system_status') {
             setSystemStatus({
               nowPlaying: data.now_playing,
-              micMuted: data.mic_muted
+              micMuted: data.mic_muted,
+              metrics: data.system_metrics || null
             });
             if (data.running_apps) {
               setRunningApps(data.running_apps);

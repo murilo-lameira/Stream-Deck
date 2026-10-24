@@ -29,3 +29,8 @@
 - [x] **3.3. Atalho Dedicado Projeto Checkup:** Botão e status em tempo real do nosso projeto de checkup.
 - [x] **3.4. Sistema de Macros / Múltiplas Ações:** Motor em `macro_service.py` com sequências encadeadas (`study_mode`, `gaming_mode`).
 - [ ] **3.5. Soundboard Embutido:** Aba para disparar efeitos sonoros e memes com reprodução instantânea no PC.
+
+---
+
+## 🛡️ 4. Auditoria de Segurança & Performance
+- Consulte o backlog detalhado de correções e mitigação em: [[Auditoria e Seguranca]].

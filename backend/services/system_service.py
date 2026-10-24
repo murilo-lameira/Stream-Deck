@@ -84,3 +84,18 @@ async def get_running_app_keys() -> List[str]:
     """Versao assincrona para nao travar o loop de eventos."""
     return await asyncio.to_thread(get_running_app_keys_sync)
 
+def get_system_metrics_sync() -> dict:
+    """Coleta métricas rápidas de uso de CPU e RAM do sistema operacional."""
+    try:
+        cpu = int(round(psutil.cpu_percent(interval=None)))
+        ram = int(round(psutil.virtual_memory().percent))
+        return {"cpu": cpu, "ram": ram}
+    except Exception as e:
+        logger.debug(f"Erro ao obter métricas de CPU/RAM: {e}")
+        return {"cpu": 0, "ram": 0}
+
+async def get_system_metrics() -> dict:
+    """Versão assíncrona para telemetria de CPU e RAM."""
+    return await asyncio.to_thread(get_system_metrics_sync)
+
+

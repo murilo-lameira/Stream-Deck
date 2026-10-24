@@ -2,8 +2,22 @@
 
 Registro cronológico das funcionalidades concebidas, desenvolvidas e validadas no Stream Deck Mobile.
 
+## Versão V8.7 - Otimização de Performance, ETag & UX Tátil
+- [x] **Endpoint REST para Capas de Mídia (PERF-02):** Novo endpoint /api/v1/deck/media/art com ETag e cache HTTP, reduzindo o payload WebSocket de 150KB para < 1KB.
+- [x] **Cooldown Anti-Duplo Clique (UX-02):** Cooldown de 800ms em DeckButton.jsx via useRef.
+- [x] **Isolamento de Gestos Swiper (UX-03):** swiper-no-swiping no VolumeSlider.jsx.
+- [x] **Testes Automatizados:** 35 testes aprovados no Pytest e build do Vite validado.
+
 ---
 
+## Versão V8.8 - Conclusão do Backlog, Token Criptográfico & Arquitetura Modular
+- [x] **Token Criptográfico & Rotação (SEC-05):** Geração segura via uth_service.py (secrets.token_urlsafe(32)) e pareamento zero-touch via query parameter ?token=....
+- [x] **Rate-Limiter Drop-Oldest (PERF-03):** Implementação em VolumeSlider.jsx (20Hz/50ms com leading & trailing edge) para eliminação de buffer bloat em Wi-Fi.
+- [x] **Desacoplamento Modular (ARCH-01):** Refatoração de pps_config.py em config/apps_registry.py, services/window_service.py e services/process_service.py com fachada retrocompatível.
+- [x] **Higienização de Exceções (ARCH-02):** Blocos pass em media_service.py substituídos por logs estruturados logger.debug.
+- [x] **Command Registry Pattern (ARCH-03):** Roteamento WebSocket migrado para o dicionário ACTION_HANDLERS (incluindo 	oggle_mic).
+
+---
 ## Versão V1 - MVP Fundamental
 - [x] Ambiente Python, FastAPI e Uvicorn configurados.
 - [x] Endpoint WebSocket com verificação de Token de segurança.
@@ -55,5 +69,26 @@ Registro cronológico das funcionalidades concebidas, desenvolvidas e validadas 
 - [x] **Indicador Visual de App Ativo (LED Neon):** Detecção de processos do Windows via `psutil` com LED verde pulsante no botão do app correspondente.
 - [x] **Modo OLED True Black Puro:** Fundo preto `#000000` estrito no tema escuro desligando pixels da tela AMOLED do Mi 9.
 
+## Versão V8.6 - Hardening de Segurança, AppSec & Desempenho
+- [x] **Mitigação de Path Traversal:** Sanitização de caminho canônico (`backend/main.py`) impedindo fuga do diretório do build estático.
+- [x] **Proteção contra CSWSH:** Validação estrita de cabeçalho `Origin` no handshake WebSocket (`backend/routers/deck_router.py`).
+- [x] **Autenticação Mandatória:** Proteção de `PUT /api/v1/deck/catalog` e `/api/agents/orchestrate` com Bearer token.
+- [x] **Proteção Anti-SSRF:** Bloqueio de hosts loopback e endereços IP restritos na ação `call_webhook` (`backend/services/macro_service.py`).
+- [x] **Desacoplamento Assíncrono do CoreAudio:** Envoltório `asyncio.to_thread` nas chamadas Pycaw do `deck_router.py`.
+- [x] **Timeout e Timing Attack Defense:** Timeout de 5s no handshake WS e comparação de token com `hmac.compare_digest`.
+- [x] **Screen Wake Lock Nativo W3C:** Hook `useWakeLock.js` modernizado com fallback gracioso para `NoSleep.js`.
+- [x] **Suite de Testes Automatizados:** 24 testes com 100% de aprovação no Pytest e compilação limpa no Vite.
+
+## Versão V8.7 - Otimização de Thumbnails REST & Ergonomia de Gestos
+- [x] **Endpoint REST de Capa com Cache ETag (`/api/v1/deck/media/art`):** Servidor binário com cabeçalhos `Cache-Control` e resposta 304 `Not Modified`.
+- [x] **Redução Drástica de Payload WebSocket:** `system_status` migrado de ~150KB (base64) para < 1KB (apenas URL com hash para cache no celular).
+- [x] **Isolamento de Gestos no Swiper:** Adicionada diretiva `noSwiping={true}` e classe `swiper-no-swiping` no `VolumeSlider.jsx`, eliminando troca de tela acidental.
+- [x] **Cooldown Anti-Spam no DeckButton:** Janela de 800ms impedindo abertura concorrente de programas pesados no Windows ao tocar rápido no Mi 9.
+- [x] **NowPlaying com Cache de Cor Dominante:** Eliminação de flickering e cálculo redundante via `dominantColorCache` em memória.
+- [x] **Expansão da Suite Pytest:** 35 testes automatizados com 100% de aprovação (`pytest backend/tests`).
+
+---
+
 [[Roadmap e Planejamento Futuro]]
+[[Auditoria e Seguranca]]
 [[MAIN]]

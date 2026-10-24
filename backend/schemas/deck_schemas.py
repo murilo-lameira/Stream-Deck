@@ -31,13 +31,16 @@ class NowPlayingState(BaseModel):
     artist: str = ""
     source_app: str = ""
     is_playing: bool = False
-    thumbnail: str = ""
+    has_thumbnail: bool = False
+    thumbnail_url: str = ""
+    thumbnail: Optional[str] = ""
 
 class SystemStatusMessage(BaseModel):
     type: str = "system_status"
     now_playing: NowPlayingState
     mic_muted: bool
     running_apps: List[str]
+    system_metrics: Optional[Dict[str, Any]] = None
 
 class ActionResultMessage(BaseModel):
     type: str = "action_result"

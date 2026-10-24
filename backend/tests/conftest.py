@@ -11,6 +11,12 @@ if backend_dir not in sys.path:
 # Configura variável de ambiente para testes
 os.environ["AUTH_TOKEN"] = "test_secret_token_123"
 
+@pytest.fixture(autouse=True)
+def reset_auth_token():
+    os.environ["AUTH_TOKEN"] = "test_secret_token_123"
+    yield
+    os.environ["AUTH_TOKEN"] = "test_secret_token_123"
+
 @pytest.fixture
 def test_token():
     return "test_secret_token_123"

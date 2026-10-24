@@ -7,21 +7,25 @@ from logging.handlers import RotatingFileHandler
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from services.network_service import get_local_ip, NetworkDiscoveryService
 from services.telemetry_service import system_telemetry_loop
-from routers.deck_router import router as deck_router
+from services.auth_service import generate_pairing_url
+from routers.deck_router import router as deck_router, verify_bearer_token
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-# Carrega variáveis de ambiente
+# Carrega variáveis de ambiente (prioriza backend/.env se existir, com fallback para .env da raiz)
+backend_env = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.isfile(backend_env):
+    load_dotenv(backend_env)
 load_dotenv()
 
 # Nome amigável na janela de console no Windows
@@ -48,7 +52,9 @@ discovery_service = NetworkDiscoveryService(PORT)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ip = get_local_ip()
+    pairing_url = generate_pairing_url(ip, PORT)
     logger.info(f"Stream Deck Backend inicializado na porta {PORT} (IP: {ip})")
+    logger.info(f"URL de pareamento: {pairing_url}")
     
     await discovery_service.start()
     telemetry_task = asyncio.create_task(system_telemetry_loop())
@@ -68,7 +74,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -82,7 +88,7 @@ async def health():
 
 @app.post("/api/agents/orchestrate")
 @app.get("/api/agents/orchestrate")
-async def trigger_orchestration_endpoint():
+async def trigger_orchestration_endpoint(authorized: bool = Depends(verify_bearer_token)):
     """Dispara a orquestração dos agentes via requisição HTTP (ideal para n8n/Alexa)."""
     from services.agent_service import orchestrate_agents
     results = await orchestrate_agents()
@@ -97,10 +103,17 @@ if os.path.isdir(frontend_path):
 
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        file_path = os.path.join(frontend_path, full_path)
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(frontend_path, "index.html"))
+        safe_base = os.path.realpath(frontend_path)
+        clean_path = full_path.lstrip("/\\")
+        target_path = os.path.realpath(os.path.join(safe_base, clean_path))
+
+        # Prevenção rigorosa de Directory Traversal
+        if not (target_path == safe_base or target_path.startswith(safe_base + os.sep)):
+            return FileResponse(os.path.join(safe_base, "index.html"))
+
+        if os.path.isfile(target_path):
+            return FileResponse(target_path)
+        return FileResponse(os.path.join(safe_base, "index.html"))
 else:
     logger.warning("Pasta frontend/dist não encontrada. O Frontend estático não será servido.")
 

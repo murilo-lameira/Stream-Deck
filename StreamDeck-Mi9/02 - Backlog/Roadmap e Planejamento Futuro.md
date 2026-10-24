@@ -65,4 +65,5 @@ graph TD
 
 [[Histórico de Entregas]]
 [[Features]]
+[[Auditoria e Seguranca]]
 [[MAIN]]

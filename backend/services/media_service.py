@@ -1,10 +1,64 @@
 import asyncio
-import base64
+import hashlib
 import logging
 import threading
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 
 logger = logging.getLogger("streamdeck.media")
+
+# Cache em memória para os bytes brutos da capa de álbum atual
+_current_art_bytes: Optional[bytes] = None
+_current_art_hash: Optional[str] = None
+_current_art_mime: str = "image/jpeg"
+_art_lock = threading.Lock()
+
+def get_image_mime_type(data: bytes) -> str:
+    """Detecta o MIME type a partir dos magic bytes da imagem."""
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    elif data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    elif data.startswith(b"GIF87a") or data.startswith(b"GIF89a"):
+        return "image/gif"
+    elif data.startswith(b"RIFF") and len(data) > 12 and data[8:12] == b"WEBP":
+        return "image/webp"
+    return "image/jpeg"
+
+def set_current_art(data: Optional[bytes]) -> Tuple[Optional[str], bool]:
+    """
+    Armazena os bytes brutos da capa no cache em memória e calcula hash MD5 e MIME type.
+    Retorna (hash_md5, has_thumbnail).
+    """
+    global _current_art_bytes, _current_art_hash, _current_art_mime
+    with _art_lock:
+        if not data:
+            _current_art_bytes = None
+            _current_art_hash = None
+            _current_art_mime = "image/jpeg"
+            return None, False
+
+        # Se idêntico ao cache atual, evita recalcular MD5
+        if _current_art_bytes is not None and _current_art_bytes == data:
+            return _current_art_hash, True
+
+        mime = get_image_mime_type(data)
+        art_hash = hashlib.md5(data).hexdigest()
+        _current_art_bytes = data
+        _current_art_hash = art_hash
+        _current_art_mime = mime
+        return art_hash, True
+
+def get_current_art() -> Tuple[Optional[bytes], Optional[str], str]:
+    """
+    Retorna uma tupla (bytes, hash_md5, mime_type) da capa atual em memória.
+    """
+    with _art_lock:
+        return _current_art_bytes, _current_art_hash, _current_art_mime
+
+def clear_media_art() -> None:
+    """Limpa o cache de capa de mídia em memória."""
+    set_current_art(None)
+
 
 try:
     from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager as MediaManager
@@ -38,7 +92,7 @@ def start_media_thread():
 
 async def fetch_media_info() -> Dict[str, Any]:
     """Submete a coroutine de leitura de mídia ao loop da thread dedicada."""
-    result = {"title": "", "artist": "", "source_app": "", "is_playing": False, "thumbnail": ""}
+    result = {"title": "", "artist": "", "source_app": "", "is_playing": False, "raw_thumbnail": None}
     
     if not _media_thread_loop or not MediaManager:
         return result
@@ -56,8 +110,8 @@ async def fetch_media_info() -> Dict[str, Any]:
                     if pb and pb.playback_status == PlaybackStatus.PLAYING:
                         session = s
                         break
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("WinRT media property extraction failure: %s", e)
 
             # Prioridade 2: sessão atual do Windows
             if not session:
@@ -81,17 +135,17 @@ async def fetch_media_info() -> Dict[str, Any]:
                             reader = DataReader.from_buffer(buf)
                             b = bytearray(stream.size)
                             reader.read_bytes(b)
-                            result["thumbnail"] = base64.b64encode(b).decode('utf-8')
-                        except Exception:
-                            pass
-            except Exception:
-                pass
+                            result["raw_thumbnail"] = bytes(b)
+                        except Exception as e:
+                            logger.debug("WinRT media property extraction failure: %s", e)
+            except Exception as e:
+                logger.debug("WinRT media property extraction failure: %s", e)
 
             # Source App
             try:
                 result["source_app"] = session.source_app_user_model_id or ""
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("WinRT media property extraction failure: %s", e)
 
             # Playback status
             if PlaybackStatus:
@@ -99,8 +153,8 @@ async def fetch_media_info() -> Dict[str, Any]:
                     pb = session.get_playback_info()
                     if pb:
                         result["is_playing"] = (pb.playback_status == PlaybackStatus.PLAYING)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("WinRT media property extraction failure: %s", e)
 
         except Exception as e:
             logger.debug(f"Erro ao buscar dados de mídia: {e}")
@@ -136,8 +190,8 @@ async def control_media_action(action: str) -> bool:
                     if pb and PlaybackStatus and pb.playback_status == PlaybackStatus.PLAYING:
                         session = s
                         break
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("WinRT media property extraction failure: %s", e)
 
             # Prioridade 2: sessão atual do Windows
             if not session:

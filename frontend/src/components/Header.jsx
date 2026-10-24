@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, RefreshCw, Settings, ShieldCheck, ShieldAlert, Moon, Sun, Maximize, Minimize } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, Settings, ShieldCheck, ShieldAlert, Moon, Sun, Maximize, Minimize, Cpu, Activity } from 'lucide-react';
 import { hapticFeedback } from '../utils/haptics';
 
-export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
+export function Header({ status, systemMetrics, onOpenSettings, isDarkMode, onToggleTheme }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -95,6 +95,19 @@ export function Header({ status, onOpenSettings, isDarkMode, onToggleTheme }) {
       </div>
 
       <div className="header-actions">
+        {systemMetrics && (
+          <div className="telemetry-pill" title={`Uso do PC: CPU ${systemMetrics.cpu}% | RAM ${systemMetrics.ram}%`}>
+            <div className="telemetry-metric">
+              <Cpu size={12} className="telemetry-icon" />
+              <span className={`metric-val ${systemMetrics.cpu > 75 ? 'warn' : ''}`}>{systemMetrics.cpu}%</span>
+            </div>
+            <span className="telemetry-sep">|</span>
+            <div className="telemetry-metric">
+              <Activity size={12} className="telemetry-icon" />
+              <span className={`metric-val ${systemMetrics.ram > 80 ? 'warn' : ''}`}>{systemMetrics.ram}%</span>
+            </div>
+          </div>
+        )}
         {getStatusBadge()}
         <button 
           className="btn-settings-icon" 

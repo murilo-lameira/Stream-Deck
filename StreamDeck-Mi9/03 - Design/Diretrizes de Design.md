@@ -27,8 +27,19 @@ Simula vidro fosco translúcido com profundidade suave:
 * **Vibration API:** Disparos de micro-vibrações nativas no Mi 9:
   * `light (25ms)`: Toque padrão nos botões de aplicativos.
   * `medium (45ms)`: Alternância de mute ou tema escuro/claro.
-  * `selection (12ms)`: Passos no slider de volume e transição de páginas.
+  * `selection (12ms)`: Passos no slider de volume (detents a cada 10%) e transição de páginas.
   * `warning / success`: Padrões compostos para ações críticas e confirmações.
+
+---
+
+## 5. Toque Físico 3D & Borda Reativa
+* **Press Depth:** Ao tocar, o botão recua com `transform: scale(0.93) translateY(2px)`, sombra interna `inset 0 4px 8px rgba(0,0,0,0.7)` e atenuação de brilho, emulando um interruptor mecânico físico.
+* **Borda Reativa do App em Execução:** O botão com aplicativo ativo emite um pulso respiratório (`borderBreathe`) em sua borda perimétrica usando a cor da identidade do app (`--app-color`).
+
+---
+
+## 6. Telemetria de Hardware em Tempo Real
+* **Pílula de Monitoramento no Header:** Exibe `CPU XX% | RAM YY%` dinamicamente coletada via `psutil` no backend a cada ciclo, alertando em cor âmbar caso o processamento ultrapasse 75%.
 
 [[Componentes de Mídia]]
 [[Responsividade e Orientação]]

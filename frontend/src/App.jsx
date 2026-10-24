@@ -34,6 +34,21 @@ export function App() {
   });
 
   const [authToken, setAuthToken] = useState(() => {
+    // Zero-Touch Pairing: detecta token na query string da URL (ex: ?token=seu_token_aqui)
+    if (typeof window !== 'undefined' && window.location && window.location.search) {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get('token');
+        if (urlToken) {
+          localStorage.setItem(STORAGE_KEY_TOKEN, urlToken);
+          // Limpa a URL do navegador para não manter o token exposto no histórico ou barra de endereços
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return urlToken;
+        }
+      } catch (err) {
+        console.error('Falha ao processar token da URL:', err);
+      }
+    }
     return localStorage.getItem(STORAGE_KEY_TOKEN) || DEFAULT_AUTH_TOKEN;
   });
 
@@ -42,7 +57,8 @@ export function App() {
   const [toast, setToast] = useState(null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('THEME') === 'dark';
+    const saved = localStorage.getItem('THEME');
+    return saved !== null ? saved === 'dark' : true;
   });
 
   const { 
@@ -197,6 +213,7 @@ export function App() {
     <div className={`app-container ${isDarkMode ? 'theme-dark' : ''}`}>
       <Header 
         status={status} 
+        systemMetrics={systemStatus?.metrics}
         onOpenSettings={() => setIsSettingsOpen(true)} 
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
