@@ -1,5 +1,11 @@
 import os
 import sys
+
+# Garante que a pasta backend esteja sempre no sys.path
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 import ctypes
 import asyncio
 import logging
@@ -109,11 +115,17 @@ if os.path.isdir(frontend_path):
 
         # Prevenção rigorosa de Directory Traversal
         if not (target_path == safe_base or target_path.startswith(safe_base + os.sep)):
-            return FileResponse(os.path.join(safe_base, "index.html"))
+            return FileResponse(
+                os.path.join(safe_base, "index.html"),
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+            )
 
-        if os.path.isfile(target_path):
+        if os.path.isfile(target_path) and not target_path.endswith("index.html"):
             return FileResponse(target_path)
-        return FileResponse(os.path.join(safe_base, "index.html"))
+        return FileResponse(
+            os.path.join(safe_base, "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        )
 else:
     logger.warning("Pasta frontend/dist não encontrada. O Frontend estático não será servido.")
 
