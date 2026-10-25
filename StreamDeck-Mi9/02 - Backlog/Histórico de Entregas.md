@@ -10,6 +10,15 @@ Registro cronológico das funcionalidades concebidas, desenvolvidas e validadas 
 
 ---
 
+## Versão V8.9 - Restauração de Gestos no Swiper & Compatibilidade de Pareamento
+- [x] **Restauração de Arraste de Slides no Swiper:** Remoção de `button` do parâmetro `focusableElements` do Swiper (`DeckSwiper.jsx`), permitindo deslizar páginas mesmo iniciando o toque sobre qualquer botão do grid.
+- [x] **Arbitragem Anti-Disparo Acidental:** Ativação de `preventClicks={true}`, `preventClicksPropagation={true}` e guarda `if (e.defaultPrevented) return;` em `DeckButton.jsx` impedindo a execução de apps durante o arrasto de páginas.
+- [x] **Isolamento de Gestos & Aceleração Touch:** Atualização para `noSwipingSelector=".swiper-no-swiping"`, sensibilidade `touchRatio={1.2}`, threshold de 8px e CSS `touch-action: pan-y;` contra interceptação do Chrome Android.
+- [x] **Retrocompatibilidade de Autenticação WebSocket:** Implementação de `is_valid_token()` em `auth_service.py` aceitando token persistido e rotação dinâmica com tolerância retroativa para o Xiaomi Mi 9.
+- [x] **Suite de Testes Pytest:** 48 testes automatizados validados com 100% de sucesso.
+
+---
+
 ## Versão V8.8 - Conclusão do Backlog, Token Criptográfico & Arquitetura Modular
 - [x] **Token Criptográfico & Rotação (SEC-05):** Geração segura via uth_service.py (secrets.token_urlsafe(32)) e pareamento zero-touch via query parameter ?token=....
 - [x] **Rate-Limiter Drop-Oldest (PERF-03):** Implementação em VolumeSlider.jsx (20Hz/50ms com leading & trailing edge) para eliminação de buffer bloat em Wi-Fi.

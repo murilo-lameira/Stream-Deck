@@ -26,6 +26,7 @@ export function DeckButton({ app, onLaunch, disabled, isRunning }) {
   const lastClickTimeRef = useRef(0);
 
   const handleClick = (e) => {
+    if (e.defaultPrevented) return;
     e.preventDefault();
     if (disabled) return;
 
@@ -56,6 +57,7 @@ export function DeckButton({ app, onLaunch, disabled, isRunning }) {
       }}
       onTouchStart={() => setIsPressed(true)}
       onTouchEnd={() => setIsPressed(false)}
+      onTouchCancel={() => setIsPressed(false)}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
       onMouseLeave={() => setIsPressed(false)}

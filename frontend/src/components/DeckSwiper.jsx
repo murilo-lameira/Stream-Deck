@@ -48,7 +48,7 @@ export function DeckSwiper({
             scale: 1,
           },
         }}
-        speed={550}
+        speed={450}
         onSlideChange={() => hapticFeedback.selection()}
         pagination={{
           clickable: true,
@@ -58,13 +58,17 @@ export function DeckSwiper({
         spaceBetween={0}
         slidesPerView={1}
         className="deck-swiper"
-        touchRatio={1.1}
-        resistanceRatio={0.7}
-        preventClicks={false}
-        preventClicksPropagation={false}
-        touchStartPreventDefault={false}
+        touchRatio={1.2}
+        resistanceRatio={0.65}
+        threshold={8}
+        touchAngle={45}
+        simulateTouch={true}
+        touchStartPreventDefault={true}
+        preventClicks={true}
+        preventClicksPropagation={true}
+        focusableElements="input, select, option, textarea, video, label"
         noSwiping={true}
-        noSwipingClass="swiper-no-swiping"
+        noSwipingSelector=".swiper-no-swiping"
       >
         {pages.map((page) => {
           if (page.type === 'media') {

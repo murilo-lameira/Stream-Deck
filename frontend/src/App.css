@@ -195,6 +195,9 @@
   width: 100%;
   height: 100%;
   padding-bottom: 34px !important;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .deck-slide {
@@ -202,6 +205,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Grid Layout (2 colunas x 4 linhas = 8 botões por tela) */
@@ -212,6 +218,7 @@
   gap: 14px;
   width: 100%;
   height: 100%;
+  touch-action: pan-y;
 }
 
 @media (orientation: landscape) {
@@ -282,7 +289,10 @@
   padding: 12px 10px;
   overflow: hidden;
   transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.12s ease, border-color 0.2s ease;
-  touch-action: manipulation;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .deck-button::before {
@@ -794,6 +804,7 @@
   gap: 14px;
   width: 100%;
   height: 100%;
+  touch-action: pan-y;
 }
 
 .media-slider-slot {
@@ -835,6 +846,7 @@
   height: 100%;
   width: 100%;
   position: relative;
+  touch-action: none !important;
   user-select: none;
   -webkit-user-select: none;
 }

@@ -84,7 +84,15 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 | **`tdd-workflow`** | Ciclo RED -> GREEN -> REFACTOR com pytest e mocks assíncronos. |
 | **`security-review`** | Auditoria de segurança, sanitização de inputs e proteção do WebSocket. |
 | **`api-design`** | Contratos REST e envelopes padronizados de WebSocket. |
-## 🚀 7. Marcos Recentes — Versão V8.8 (Conclusão do Backlog)
+## 🚀 7. Marcos Recentes — Versão V8.9 (Gestos Swiper & Pareamento)
+- **Restauração de Swipe Horizontal:** Remoção de `button` do parâmetro `focusableElements` do Swiper (`DeckSwiper.jsx`), permitindo deslizar páginas com o dedo iniciando sobre qualquer botão do grid.
+- **Arbitragem Anti-Disparo Acidental:** Ativação de `preventClicks={true}`, `preventClicksPropagation={true}` e guarda `if (e.defaultPrevented) return;` em `DeckButton.jsx` impedindo disparos indesejados ao arrastar.
+- **Isolamento de Gestos & CSS Pan:** Uso de `noSwipingSelector=".swiper-no-swiping"`, sensibilidade `touchRatio={1.2}`, threshold 8px e CSS `touch-action: pan-y;` prevenindo conflitos com o Chrome Android.
+- **Retrocompatibilidade de Autenticação:** Implementação de `is_valid_token()` em `auth_service.py` aceitando tanto o token estático quanto novos tokens dinâmicos, garantindo conexão ininterrupta.
+
+---
+
+## 🚀 8. Marcos Anteriores — Versão V8.8 (Conclusão do Backlog)
 - **Token Criptográfico (SEC-05):** Rotação segura via uth_service.py (secrets.token_urlsafe(32)) e pareamento zero-touch via query parameter ?token=....
 - **Rate-Limiter Drop-Oldest (PERF-03):** Controle analógico em VolumeSlider.jsx (20Hz/50ms) para eliminação de jitter em Wi-Fi.
 - **Arquitetura Modular (ARCH-01/02/03):** Desacoplamento de pps_config.py em pps_registry.py, window_service.py e process_service.py. Higienização de exceções com logger.debug em media_service.py e Command Registry Pattern no WebSocket (ACTION_HANDLERS).
