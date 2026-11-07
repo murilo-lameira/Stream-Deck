@@ -1,4 +1,0 @@
-Conns: 2
-Title: 
-Artist: 
-Is Playing: False

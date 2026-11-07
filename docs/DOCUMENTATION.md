@@ -12,7 +12,7 @@
 <br>
 
 <!-- Cole a imagem do projeto aqui -->
-![Stream Deck Mobile no Xiaomi Mi 9](docs/images/image-2.png)
+![Stream Deck Mobile no Xiaomi Mi 9](images/image-2.png)
 
 ## ♻️ O Propósito do Projeto
 Todos nós temos aquele smartphone antigo guardado na gaveta. Neste projeto, o objetivo foi dar um **novo destino e utilidade a um Xiaomi Mi 9 descartado**. Ao invés de se tornar lixo eletrônico, aproveitamos sua tela AMOLED belíssima e seu hardware touch para transformá-lo em um **Controlador de Mídia e Lançador de Aplicativos Remoto (Stream Deck)** para Windows.

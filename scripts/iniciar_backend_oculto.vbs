@@ -1,9 +1,10 @@
 Set WshShell = CreateObject("WScript.Shell")
 Set FSO = CreateObject("Scripting.FileSystemObject")
 
-' Obtém diretório do projeto dinamicamente (portável para qualquer pasta)
+' Obtém diretório do projeto dinamicamente a partir de scripts/
 scriptDir = FSO.GetParentFolderName(WScript.ScriptFullName)
-backendDir = FSO.BuildPath(scriptDir, "backend")
+projectDir = FSO.GetParentFolderName(scriptDir)
+backendDir = FSO.BuildPath(projectDir, "backend")
 pythonExe = FSO.BuildPath(backendDir, "venv\Scripts\python.exe")
 
 ' Define diretório de trabalho no backend

@@ -9,6 +9,7 @@ venv/
 ENV/
 env/
 *.log
+backend/logs/
 backend/backend_error.log
 backend/test_launch.py
 backend/test_media2.py

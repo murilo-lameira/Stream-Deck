@@ -2,11 +2,12 @@
 
 Registro cronológico das funcionalidades concebidas, desenvolvidas e validadas no Stream Deck Mobile.
 
-## Versão V8.7 - Otimização de Performance, ETag & UX Tátil
-- [x] **Endpoint REST para Capas de Mídia (PERF-02):** Novo endpoint /api/v1/deck/media/art com ETag e cache HTTP, reduzindo o payload WebSocket de 150KB para < 1KB.
-- [x] **Cooldown Anti-Duplo Clique (UX-02):** Cooldown de 800ms em DeckButton.jsx via useRef.
-- [x] **Isolamento de Gestos Swiper (UX-03):** swiper-no-swiping no VolumeSlider.jsx.
-- [x] **Testes Automatizados:** 35 testes aprovados no Pytest e build do Vite validado.
+## Versão V8.10 - Organização Estrutural de Diretórios & Higienização da Raiz
+- [x] **Minimização de Arquivos na Raiz:** Transferência de scripts (`iniciar_streamdeck.vbs`, `iniciar_backend_oculto.vbs` para `scripts/`) e documentação auxiliar (`DOCUMENTATION.md` para `docs/`).
+- [x] **Portabilidade e Autostart VBS:** Atualização da resolução de caminhos em `iniciar_streamdeck.vbs` para apontar ao `backend` a partir de `scripts/`, integrando nativamente com `setup_autostart.ps1`.
+- [x] **Diretório Centralizado de Logs:** Criação de `backend/logs/` e redirecionamento de logs de execução e rotação (`main.py`), higienizando o backend e ignorando a pasta no `.gitignore`.
+- [x] **Desacoplamento Completo de Serviços:** Migração da implementação de `audio_service.py` para `backend/services/audio_service.py` com fachada retrocompatível no root do backend.
+- [x] **Validação Contínua:** 48 testes automatizados aprovados no Pytest e build de frontend intacto.
 
 ---
 

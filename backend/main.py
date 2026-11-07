@@ -42,7 +42,9 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", 8000))
 
 # Configuração de Logs com Rotação Automática (5MB por arquivo, 3 backups)
-log_file_path = os.path.join(os.path.dirname(__file__), "streamdeck.log")
+logs_dir = os.path.join(os.path.dirname(__file__), "logs")
+os.makedirs(logs_dir, exist_ok=True)
+log_file_path = os.path.join(logs_dir, "streamdeck.log")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",

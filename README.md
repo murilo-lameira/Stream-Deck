@@ -123,7 +123,9 @@ Stream Deck/
 │   ├── 04 - Integracoes/         # Webhooks n8n e automação Alexa
 │   ├── 05 - Aplicativos/         # Catálogo de Executáveis e Regras Windows
 │   └── gemini-scribe/Prompts/    # Prompts especializados dos 5 subagentes
-├── iniciar_streamdeck.vbs        # Inicialização silenciosa do servidor
+├── docs/                         # Documentação técnica e capturas de tela
+├── scripts/                      # Scripts operacionais e inicializador VBS
+│   └── iniciar_streamdeck.vbs    # Inicialização silenciosa do servidor
 └── README.md                     # Documentação oficial
 ```
 
@@ -136,7 +138,7 @@ Com a arquitetura unificada (V6), o backend Python hospeda o frontend pré-compi
 ### 1. Inicialização Rápida (1 Clique)
 Basta dar dois cliques no arquivo:
 ```text
-iniciar_streamdeck.vbs
+scripts/iniciar_streamdeck.vbs
 ```
 Ele iniciará o servidor FastAPI silenciosamente em segundo plano na porta **8000** e registrará o mDNS na rede local.
 

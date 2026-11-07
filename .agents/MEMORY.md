@@ -84,7 +84,16 @@ Este arquivo preserva as decisões arquiteturais, preferências operacionais, ar
 | **`tdd-workflow`** | Ciclo RED -> GREEN -> REFACTOR com pytest e mocks assíncronos. |
 | **`security-review`** | Auditoria de segurança, sanitização de inputs e proteção do WebSocket. |
 | **`api-design`** | Contratos REST e envelopes padronizados de WebSocket. |
-## 🚀 7. Marcos Recentes — Versão V8.9 (Gestos Swiper & Pareamento)
+
+## 🚀 7. Marcos Recentes — Versão V8.10 (Organização Estrutural de Pastas)
+- **Minimização da Raiz:** Scripts `.vbs` movidos para `scripts/` e documentação técnica movida para `docs/DOCUMENTATION.md`, mantendo apenas os 6 arquivos mandatórios na raiz.
+- **Portabilidade de Scripts:** `scripts/iniciar_streamdeck.vbs` e `scripts/setup_autostart.ps1` alinhados e apontando dinamicamente para o backend.
+- **Centralização de Logs:** Criação de `backend/logs/` e atualização do `RotatingFileHandler` em `main.py`, eliminando arquivos de log soltos.
+- **Modularização de Serviços:** `audio_service.py` migrado para `backend/services/audio_service.py` com fachada retrocompatível no root do backend.
+
+---
+
+## 🚀 8. Marcos Anteriores — Versão V8.9 (Gestos Swiper & Pareamento)
 - **Restauração de Swipe Horizontal:** Remoção de `button` do parâmetro `focusableElements` do Swiper (`DeckSwiper.jsx`), permitindo deslizar páginas com o dedo iniciando sobre qualquer botão do grid.
 - **Arbitragem Anti-Disparo Acidental:** Ativação de `preventClicks={true}`, `preventClicksPropagation={true}` e guarda `if (e.defaultPrevented) return;` em `DeckButton.jsx` impedindo disparos indesejados ao arrastar.
 - **Isolamento de Gestos & CSS Pan:** Uso de `noSwipingSelector=".swiper-no-swiping"`, sensibilidade `touchRatio={1.2}`, threshold 8px e CSS `touch-action: pan-y;` prevenindo conflitos com o Chrome Android.
