@@ -2,7 +2,7 @@ import os
 from apps_config import APPS_MAP, APP_PROCESS_NAMES, SYSTEM_KEYS
 
 def test_apps_map_contains_core_apps():
-    required_apps = ["vscode", "discord", "chrome", "spotify", "gemini", "obsidian", "checkup"]
+    required_apps = ["vscode", "discord", "chrome", "spotify", "claude", "obsidian", "checkup"]
     for app_id in required_apps:
         assert app_id in APPS_MAP
         assert len(APPS_MAP[app_id]) > 0

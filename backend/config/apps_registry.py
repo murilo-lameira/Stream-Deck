@@ -17,8 +17,8 @@ APPS_MAP: Dict[str, List[str]] = {
     "spotify": [
         os.path.expandvars(r"%APPDATA%\Spotify\Spotify.exe")
     ],
-    "gemini": [
-        os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs\apps do Chrome\Gemini.lnk")
+    "claude": [
+        r"shell:AppsFolder\Claude_pzs8sxrjxfjjc!Claude"
     ],
     "lol": [
         os.path.expandvars(r"%PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs\Riot Games\League of Legends.lnk")
@@ -69,6 +69,7 @@ APP_PROCESS_NAMES: Dict[str, Tuple[str, ...]] = {
     "chrome": ("chrome.exe",),
     "spotify": ("spotify.exe",),
     "obsidian": ("obsidian.exe",),
+    "claude": ("claude.exe",),
     "whatsapp": ("whatsapp.exe", "whatsapp.root.exe"),
     "steam": ("steam.exe",),
     "lol": ("leagueclient.exe", "leagueclientux.exe", "riotclientservices.exe"),
@@ -90,7 +91,6 @@ SYSTEM_KEYS: Dict[str, int] = {
 }
 
 WINDOW_TITLE_KEYWORDS: Dict[str, str] = {
-    "gemini": "gemini",
     "youtube": "youtube",
     "github": "github"
 }

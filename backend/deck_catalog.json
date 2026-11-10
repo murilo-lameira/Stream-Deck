@@ -11,7 +11,7 @@
         { "id": "whatsapp", "name": "WhatsApp",   "icon": "whatsapp", "color": "#25D366" },
         { "id": "chrome",   "name": "Chrome",     "icon": "chrome",   "color": "#EA4335" },
         { "id": "spotify",  "name": "Spotify",    "icon": "spotify",  "color": "#1DB954" },
-        { "id": "gemini",   "name": "Gemini",     "icon": "gemini",   "color": "#8E24AA" },
+        { "id": "claude",   "name": "Claude",     "icon": "claude",   "color": "#D97757" },
         { "id": "youtube",  "name": "YouTube",    "icon": "youtube",  "color": "#FF0000" },
         { "id": "obsidian", "name": "Obsidian",   "icon": "obsidian", "color": "#7c3aed" }
       ]

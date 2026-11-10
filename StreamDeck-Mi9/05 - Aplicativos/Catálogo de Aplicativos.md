@@ -12,7 +12,7 @@ Listagem consolidada dos botões ativos divididos pelas 3 páginas do Stream Dec
 | `whatsapp` | WhatsApp | Protocolo nativo Windows `whatsapp:` | `#25D366` |
 | `chrome` | Google Chrome | `%PROGRAMFILES%\Google\Chrome\Application\chrome.exe` | `#EA4335` |
 | `spotify` | Spotify | `%APPDATA%\Spotify\Spotify.exe` | `#1DB954` |
-| `gemini` | Google Gemini | Atalho Web App Chrome `.lnk` | `#8E24AA` |
+| `claude` | Claude | App desktop MSIX `shell:AppsFolder\Claude_pzs8sxrjxfjjc!Claude` (processo `claude.exe`) | `#D97757` |
 | `youtube` | YouTube | Chrome com URL `https://youtube.com` | `#FF0000` |
 | `obsidian` | Obsidian | `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Obsidian.lnk` | `#7C3AED` |
 

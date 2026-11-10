@@ -2,7 +2,7 @@ import vscodeIcon from '../assets/icons/vscode.svg';
 import discordIcon from '../assets/icons/discord.svg';
 import chromeIcon from '../assets/icons/chrome.svg';
 import spotifyIcon from '../assets/icons/spotify.svg';
-import geminiIcon from '../assets/icons/gemini.svg';
+import claudeIcon from '../assets/icons/claude.svg';
 import lolIcon from '../assets/icons/league-of-legends.svg';
 import steamIcon from '../assets/icons/steam.svg';
 import obsidianIcon from '../assets/icons/obsidian.svg';
@@ -30,7 +30,7 @@ const ICON_MAP = {
   discord: discordIcon,
   chrome: chromeIcon,
   spotify: spotifyIcon,
-  gemini: geminiIcon,
+  claude: claudeIcon,
   'league-of-legends': lolIcon,
   lol: lolIcon,
   steam: steamIcon,

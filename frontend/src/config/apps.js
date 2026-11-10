@@ -2,7 +2,7 @@ import vscodeIcon from '../assets/icons/vscode.svg';
 import discordIcon from '../assets/icons/discord.svg';
 import chromeIcon from '../assets/icons/chrome.svg';
 import spotifyIcon from '../assets/icons/spotify.svg';
-import geminiIcon from '../assets/icons/gemini.svg';
+import claudeIcon from '../assets/icons/claude.svg';
 import lolIcon from '../assets/icons/league-of-legends.svg';
 import steamIcon from '../assets/icons/steam.svg';
 import obsidianIcon from '../assets/icons/obsidian.svg';
@@ -29,7 +29,7 @@ export const PAGE1_APPS = [
   { id: 'whatsapp', name: 'WhatsApp',   icon: whatsappIcon, color: '#25D366' },
   { id: 'chrome',   name: 'Chrome',     icon: chromeIcon,   color: '#EA4335' },
   { id: 'spotify',  name: 'Spotify',    icon: spotifyIcon,  color: '#1DB954' },
-  { id: 'gemini',   name: 'Gemini',     icon: geminiIcon,   color: '#8E24AA' },
+  { id: 'claude',   name: 'Claude',     icon: claudeIcon,   color: '#D97757' },
   { id: 'youtube',  name: 'YouTube',    icon: youtubeIcon,  color: '#FF0000' },
   { id: 'obsidian', name: 'Obsidian',   icon: obsidianIcon, color: '#7c3aed' },
 ];

@@ -11,14 +11,13 @@ from typing import List, Set, Tuple
 
 WINDOW_KEYWORDS = {
     "youtube": ["youtube - google chrome", "youtube"],
-    "gemini": ["google gemini", "gemini"],
     "github": ["github - google chrome", "github"]
 }
 
 def get_visible_window_titles_sync() -> List[str]:
     """
     Enumera as janelas visíveis no desktop ativo do usuário (Default),
-    permitindo identificar abas ativas do navegador (YouTube, Gemini, GitHub).
+    permitindo identificar abas ativas do navegador (YouTube, GitHub).
     """
     titles: List[str] = []
     try:
@@ -67,7 +66,7 @@ def get_running_app_keys_sync() -> List[str]:
                     running_keys.add(app_key)
 
         # Se o Chrome ou outro navegador estiver ativo, inspeciona as janelas
-        # para acender YouTube, Gemini ou GitHub quando abertos
+        # para acender YouTube ou GitHub quando abertos
         if "chrome" in running_keys or "chrome.exe" in active_exes:
             titles = get_visible_window_titles_sync()
             for title in titles:
@@ -97,5 +96,4 @@ def get_system_metrics_sync() -> dict:
 async def get_system_metrics() -> dict:
     """Versão assíncrona para telemetria de CPU e RAM."""
     return await asyncio.to_thread(get_system_metrics_sync)
-
 

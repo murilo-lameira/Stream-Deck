@@ -15,7 +15,7 @@ def simulate_key(vk_code: int) -> None:
 def bring_to_foreground(target: Union[str, List[str], Tuple[str, ...]], is_window_title: bool = False) -> bool:
     """
     Traz a janela do aplicativo para o primeiro plano.
-    Pode buscar por nome do processo (ex: 'code.exe') ou por palavra-chave no título (ex: 'gemini', 'youtube').
+    Pode buscar por nome do processo (ex: 'code.exe') ou por palavra-chave no título (ex: 'youtube', 'github').
     """
     import psutil
     try:

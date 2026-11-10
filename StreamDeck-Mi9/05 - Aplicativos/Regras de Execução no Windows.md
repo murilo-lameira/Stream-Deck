@@ -7,7 +7,7 @@ O backend Python implementa rotinas otimizadas para despachar aplicativos de for
 ## 1. Foco Inteligente de Janelas (`bring_to_foreground`)
 Quando o usuário toca em um app que já está aberto:
 1. O backend consulta o nome do processo em `APP_PROCESS_NAMES` usando `psutil`.
-2. Para WebApps e abas de navegador (`youtube`, `gemini`, `github`), consulta diretamente os títulos de janelas visíveis via `EnumWindows` no desktop `Default`.
+2. Para WebApps e abas de navegador (`youtube`, `github`), consulta diretamente os títulos de janelas visíveis via `EnumWindows` no desktop `Default`.
 3. Uma simulação de pressionamento e liberação da tecla `ALT` (código virtual `0x12`) é disparada para desviar a restrição do Windows contra roubo de foco.
 4. O comando `SetForegroundWindow` é chamado, trazendo a janela instantaneamente para a frente sem abrir um segundo executável ou nova aba.
 
@@ -16,7 +16,7 @@ Quando o usuário toca em um app que já está aberto:
 ## 2. Detecção de Abas e WebApps no Windows
 - Abas de navegador compartilham o processo `chrome.exe`.
 - O `system_service.py` acessa o handle do desktop `Default` (`user32.OpenDesktopW`) e inspeciona janelas ativas em tempo real.
-- Reconhece títulos contendo `YouTube`, `Google Gemini` e `GitHub`, ativando o **LED Neon Indicador** no deck para essas abas sem necessidade de extensões externas.
+- Reconhece títulos contendo `YouTube` e `GitHub`, ativando o **LED Neon Indicador** no deck para essas abas sem necessidade de extensões externas.
 
 ---
 
