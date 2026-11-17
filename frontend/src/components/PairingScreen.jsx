@@ -97,7 +97,13 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
     setMessage(msg);
   };
 
-  const focusFirst = () => setTimeout(() => inputRefs.current[0]?.focus(), 0);
+  const lockFor = (seconds) => {
+    const t = Date.now();
+    setNow(t);
+    setRetryUntil(t + (Number(seconds) || 0) * 1000);
+  };
+
+  const focusFirst =() => setTimeout(() => inputRefs.current[0]?.focus(), 0);
 
   const handleRequest = async () => {
     if (busyRef.current) return;
@@ -121,12 +127,15 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
       setExpiresAt(t + (Number(data.expires_in) || 120) * 1000);
       focusFirst();
     } else if (status === 429) {
+      // O botao mostra a contagem (waitLabel); sem mensagem fixa que fique desatualizada
+      hapticFeedback.warning();
       setRetryUntil(Date.now() + retry * 1000);
       setNow(Date.now());
-      fail(`Aguarde ${Math.max(1, Math.ceil(retry))} s`);
     } else if (status === 423) {
-      fail(`Muitas tentativas — tente em ${minutesFrom(retry)} min`);
-      if (pairId !== null) resetToStart(`Muitas tentativas — tente em ${minutesFrom(retry)} min`);
+      lockFor(retry);
+      const lockMsg = `Muitas tentativas — tente em ${minutesFrom(retry)} min`;
+      fail(lockMsg);
+      if (pairId !== null) resetToStart(lockMsg);
     } else if (status === 503) {
       fail('Não consegui mostrar o código no PC');
       if (pairId !== null) resetToStart('Não consegui mostrar o código no PC');
@@ -171,7 +180,11 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
       resetToStart('Expirou — gere outro');
     } else if (status === 423) {
       hapticFeedback.warning();
+      lockFor(data.retry_after);
       resetToStart(`Muitas tentativas — tente em ${minutesFrom(data.retry_after)} min`);
+    } else if (status === 403) {
+      hapticFeedback.warning();
+      resetToStart('Acesso negado — use a rede local');
     } else if (status === 0) {
       fail('Sem conexão com o PC');
       focusFirst();
@@ -275,7 +288,7 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  maxLength={i === 0 ? CODE_LENGTH : 1}
+                  maxLength={i === 0 ? CODE_LENGTH : 2}
                   autoComplete={i === 0 ? 'one-time-code' : 'off'}
                   value={d}
                   disabled={busy}

@@ -90,7 +90,12 @@ export function App() {
   } = useWebSocket(
     wsUrl,
     authToken,
-    { onAuthRejected: clearToken }
+    {
+      onAuthRejected: () => {
+        clearToken();
+        showToast('Pareamento recusado — pareie de novo', 'error');
+      }
+    }
   );
 
   const showToast = (message, type = 'info') => {
