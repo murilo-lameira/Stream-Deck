@@ -1082,11 +1082,13 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  overflow-y: auto;
   background: #000000;
   color: #f1f5f9;
 }
 
 .pairing-card {
+  margin: auto;
   width: 100%;
   max-width: 360px;
   display: flex;

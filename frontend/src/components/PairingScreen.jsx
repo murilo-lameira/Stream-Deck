@@ -52,6 +52,7 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
   const [expiresAt, setExpiresAt] = useState(0);
   const [retryUntil, setRetryUntil] = useState(0);
   const inputRefs = useRef([]);
+  const busyRef = useRef(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -83,6 +84,14 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
     }
   }, [now, pairId, expiresAt, busy, resetToStart]);
 
+  // Fim do retry_after: zera o prazo (para o intervalo) e some com "Aguarde N s"
+  useEffect(() => {
+    if (retryUntil && now >= retryUntil) {
+      setRetryUntil(0);
+      setMessage((m) => (m.startsWith('Aguarde') ? '' : m));
+    }
+  }, [now, retryUntil]);
+
   const fail = (msg) => {
     hapticFeedback.warning();
     setMessage(msg);
@@ -91,14 +100,16 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
   const focusFirst = () => setTimeout(() => inputRefs.current[0]?.focus(), 0);
 
   const handleRequest = async () => {
-    if (busy) return;
+    if (busyRef.current) return;
     if (!base) {
       fail('Endereço do PC inválido');
       return;
     }
+    busyRef.current = true;
     setBusy(true);
     setMessage('');
     const { status, data } = await postJson(`${base}/api/v1/deck/pair/request`);
+    busyRef.current = false;
     if (!mountedRef.current) return;
     setBusy(false);
     const retry = Number(data.retry_after) || 0;
@@ -115,8 +126,10 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
       fail(`Aguarde ${Math.max(1, Math.ceil(retry))} s`);
     } else if (status === 423) {
       fail(`Muitas tentativas — tente em ${minutesFrom(retry)} min`);
+      if (pairId !== null) resetToStart(`Muitas tentativas — tente em ${minutesFrom(retry)} min`);
     } else if (status === 503) {
       fail('Não consegui mostrar o código no PC');
+      if (pairId !== null) resetToStart('Não consegui mostrar o código no PC');
     } else if (status === 403) {
       fail('Acesso negado — use a rede local');
     } else if (status === 0) {
@@ -127,12 +140,15 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
   };
 
   const submitCode = async (code) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setMessage('');
     const { status, data } = await postJson(`${base}/api/v1/deck/pair/confirm`, {
       pair_id: pairId,
       code
     });
+    busyRef.current = false;
     if (!mountedRef.current) return;
     setBusy(false);
     if (status === 200 && data.auth_token) {
@@ -171,8 +187,19 @@ export function PairingScreen({ wsUrl, onPaired, onOpenSettings }) {
   };
 
   const handleChange = (index, value) => {
-    const onlyDigits = value.replace(/\D/g, '');
+    // Apagar via teclado virtual/cortar: o Gboard nem sempre manda keydown Backspace
+    if (value === '') {
+      const cleared = [...digits];
+      cleared[index] = '';
+      setDigits(cleared);
+      return;
+    }
+    let onlyDigits = value.replace(/\D/g, '');
     if (!onlyDigits) return;
+    // Campo ja tinha um digito e entrou 1 caractere a mais: substitui pelo novo caractere
+    if (digits[index] && onlyDigits.length === 2) {
+      onlyDigits = onlyDigits.replace(digits[index], '').slice(-1) || onlyDigits.slice(-1);
+    }
     const next = [...digits];
     if (onlyDigits.length > 1) {
       // autopreenchimento (one-time-code): distribui a partir deste campo
