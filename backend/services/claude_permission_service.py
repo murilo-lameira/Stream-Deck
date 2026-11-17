@@ -1,9 +1,9 @@
 import asyncio
 import json
 import math
+import secrets
 import logging
 import time
-import uuid
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Dict, List, Literal, Optional
 
@@ -69,10 +69,25 @@ class PermissionBroker:
             {"type": "claude_permission_resolved", "request_id": request_id, "outcome": outcome}
         )
 
+    def _purge(self) -> List[str]:
+        """Remove entradas decididas ou vencidas; devolve ids vencidos sem decisao."""
+        now = time.monotonic()
+        expired: List[str] = []
+        for rid, p in list(self._pending.items()):
+            if p.future.done():
+                del self._pending[rid]
+            elif p.deadline <= now:
+                p.future.set_result(None)
+                del self._pending[rid]
+                expired.append(rid)
+        return expired
+
     async def submit(self, tool_name: str, tool_input: dict, cwd: str) -> Optional[str]:
+        for rid in self._purge():
+            await self._resolved(rid, "expired")
         if len(self._pending) >= self._max_pending:
             return None
-        request_id = uuid.uuid4().hex
+        request_id = secrets.token_urlsafe(16)
         pending = _Pending(
             tool_name=tool_name,
             summary=summarize(tool_name, tool_input),
@@ -93,6 +108,11 @@ class PermissionBroker:
         except asyncio.TimeoutError:
             await self._resolved(request_id, "expired")
             return None
+        except asyncio.CancelledError:
+            # wait_for cancela o future interno; um future com resultado ja foi decidido.
+            if not pending.future.done() or pending.future.cancelled():
+                await self._resolved(request_id, "cancelled")
+            raise
         finally:
             self._pending.pop(request_id, None)
 
@@ -114,6 +134,7 @@ class PermissionBroker:
         await self._resolved(request_id, "cancelled")
 
     def pending_messages(self) -> List[dict]:
+        self._purge()
         return [
             self._request_message(rid, p)
             for rid, p in self._pending.items()

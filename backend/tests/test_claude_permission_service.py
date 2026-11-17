@@ -130,3 +130,63 @@ async def test_pending_messages_expires_in_decreases():
     second = broker.pending_messages()[0]
     assert second["type"] == "claude_permission_request"
     assert 0 <= second["expires_in"] < first
+
+
+@pytest.mark.asyncio
+async def test_request_id_is_urlsafe_token():
+    broker = PermissionBroker(AsyncMock())
+    rid = await broker.submit("Bash", {}, "/x")
+    assert len(rid) == 22
+    assert all(c.isalnum() or c in "-_" for c in rid)
+
+
+@pytest.mark.asyncio
+async def test_wait_cancelled_broadcasts_cancelled_and_removes():
+    bc = AsyncMock()
+    broker = PermissionBroker(bc)
+    rid = await broker.submit("Bash", {}, "/x")
+    waiter = asyncio.create_task(broker.wait(rid))
+    await asyncio.sleep(0)
+    waiter.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await waiter
+    msg = bc.await_args.args[0]
+    assert msg == {"type": "claude_permission_resolved", "request_id": rid, "outcome": "cancelled"}
+    assert broker.pending_messages() == []
+    bc.reset_mock()
+    await broker.cancel(rid)
+    bc.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_cancel_while_waiting_returns_none_single_broadcast():
+    bc = AsyncMock()
+    broker = PermissionBroker(bc)
+    rid = await broker.submit("Bash", {}, "/x")
+    waiter = asyncio.create_task(broker.wait(rid))
+    await asyncio.sleep(0)
+    bc.reset_mock()
+    await broker.cancel(rid)
+    assert await waiter is None
+    assert bc.await_count == 1
+    assert bc.await_args.args[0]["outcome"] == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_resolved_unawaited_does_not_occupy_slot():
+    broker = PermissionBroker(AsyncMock(), max_pending=1)
+    rid = await broker.submit("Bash", {}, "/x")
+    assert await broker.resolve(rid, "allow") is True
+    assert await broker.submit("Bash", {}, "/x") not in (None, rid)
+
+
+@pytest.mark.asyncio
+async def test_expired_unawaited_is_purged_with_broadcast():
+    bc = AsyncMock()
+    broker = PermissionBroker(bc, timeout_s=0.05, max_pending=1)
+    rid = await broker.submit("Bash", {}, "/x")
+    await asyncio.sleep(0.1)
+    new = await broker.submit("Bash", {}, "/x")
+    assert new is not None
+    outcomes = [c.args[0] for c in bc.await_args_list if c.args[0]["type"] == "claude_permission_resolved"]
+    assert outcomes == [{"type": "claude_permission_resolved", "request_id": rid, "outcome": "expired"}]
