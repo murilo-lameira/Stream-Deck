@@ -12,7 +12,10 @@ from routers.deck_router import (
     handle_call_webhook_action,
     handle_get_catalog_action,
     handle_ping_action,
+    handle_claude_permission_response,
 )
+from pydantic import ValidationError
+from services import claude_permission_service
 
 def test_action_handlers_registry():
     expected_actions = {
@@ -25,6 +28,7 @@ def test_action_handlers_registry():
         "call_webhook",
         "get_catalog",
         "ping",
+        "claude_permission_response",
     }
     assert set(ACTION_HANDLERS.keys()) == expected_actions
     for action, handler in ACTION_HANDLERS.items():
@@ -138,3 +142,43 @@ async def test_handle_run_macro_and_webhook():
             "status": "success",
             "message": "Webhook disparado: https://example.com/hook"
         })
+
+
+@pytest.mark.asyncio
+async def test_permission_response_resolves(monkeypatch):
+    mock_ws = AsyncMock()
+    broker = MagicMock()
+    broker.resolve = AsyncMock(return_value=True)
+    monkeypatch.setattr(claude_permission_service, "broker", broker)
+    cmd = DeckActionPayload(action="claude_permission_response", request_id="abc", decision="allow")
+    await handle_claude_permission_response(mock_ws, cmd)
+    broker.resolve.assert_awaited_once_with("abc", "allow")
+
+
+@pytest.mark.asyncio
+async def test_permission_response_unknown_id(monkeypatch):
+    mock_ws = AsyncMock()
+    broker = MagicMock()
+    broker.resolve = AsyncMock(return_value=False)
+    monkeypatch.setattr(claude_permission_service, "broker", broker)
+    cmd = DeckActionPayload(action="claude_permission_response", request_id="zzz", decision="deny")
+    await handle_claude_permission_response(mock_ws, cmd)
+    args = mock_ws.send_json.call_args[0][0]
+    assert args["status"] == "error"
+    assert args["message"] == "Pedido expirado"
+
+
+@pytest.mark.asyncio
+async def test_permission_response_missing_fields(monkeypatch):
+    mock_ws = AsyncMock()
+    broker = MagicMock()
+    broker.resolve = AsyncMock(return_value=True)
+    monkeypatch.setattr(claude_permission_service, "broker", broker)
+    await handle_claude_permission_response(mock_ws, DeckActionPayload(action="claude_permission_response"))
+    assert mock_ws.send_json.call_args[0][0]["message"] == "Pedido invalido."
+    broker.resolve.assert_not_awaited()
+
+
+def test_permission_response_invalid_decision():
+    with pytest.raises(ValidationError):
+        DeckActionPayload(action="claude_permission_response", request_id="a", decision="maybe")

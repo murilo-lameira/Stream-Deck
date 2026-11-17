@@ -35,3 +35,17 @@ def test_websocket_ping_pong(test_client, test_token):
         pong = ws.receive_json()
         assert pong.get("type") == "pong"
 
+
+
+def test_pending_resent_on_auth(test_client, test_token, monkeypatch):
+    from services import claude_permission_service
+    msgs = [
+        {"type": "claude_permission_request", "request_id": "r1", "expires_in": 30},
+        {"type": "claude_permission_request", "request_id": "r2", "expires_in": 20},
+    ]
+    monkeypatch.setattr(claude_permission_service.broker, "pending_messages", lambda: msgs)
+    with test_client.websocket_connect("/ws") as ws:
+        ws.send_json({"auth_token": test_token})
+        assert ws.receive_json()["type"] == "auth_success"
+        assert ws.receive_json()["request_id"] == "r1"
+        assert ws.receive_json()["request_id"] == "r2"

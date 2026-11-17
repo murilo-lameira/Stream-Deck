@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 class AuthPayload(BaseModel):
@@ -12,6 +12,8 @@ class DeckActionPayload(BaseModel):
     level: Optional[int] = Field(None, ge=0, le=100, description="Nível de volume absoluto (0 a 100)")
     macro: Optional[str] = Field(None, description="Nome da macro a ser executada")
     url: Optional[str] = Field(None, description="URL do webhook a ser chamado")
+    request_id: Optional[str] = Field(None, max_length=64, description="Id do pedido de permissao do Claude Code")
+    decision: Optional[Literal["allow", "deny"]] = Field(None, description="Decisao do usuario: 'allow' ou 'deny'")
 
 class TriggerPayload(BaseModel):
     """Payload recebido no endpoint REST /api/trigger."""

@@ -15,6 +15,7 @@ from services.macro_service import load_macros, execute_macro, dispatch_webhook
 from services.media_service import get_current_art
 from services.auth_service import get_auth_token, rotate_token, generate_pairing_url, is_valid_token
 from services.network_service import get_local_ip
+from services import claude_permission_service
 from routers.security_deps import require_loopback
 from schemas.deck_schemas import AuthPayload, DeckActionPayload, TriggerPayload
 
@@ -277,6 +278,14 @@ async def handle_get_catalog_action(websocket: WebSocket, command: DeckActionPay
 async def handle_ping_action(websocket: WebSocket, command: DeckActionPayload) -> None:
     await websocket.send_json({"type": "pong"})
 
+async def handle_claude_permission_response(websocket: WebSocket, command: DeckActionPayload) -> None:
+    if not command.request_id or not command.decision:
+        await websocket.send_json({"type": "action_result", "status": "error", "message": "Pedido invalido."})
+        return
+    resolved = await claude_permission_service.broker.resolve(command.request_id, command.decision)
+    if not resolved:
+        await websocket.send_json({"type": "action_result", "status": "error", "message": "Pedido expirado"})
+
 ACTION_HANDLERS: Dict[str, Callable[[WebSocket, DeckActionPayload], Coroutine[Any, Any, None]]] = {
     "open": handle_open_action,
     "set_volume": handle_set_volume_action,
@@ -287,6 +296,7 @@ ACTION_HANDLERS: Dict[str, Callable[[WebSocket, DeckActionPayload], Coroutine[An
     "call_webhook": handle_call_webhook_action,
     "get_catalog": handle_get_catalog_action,
     "ping": handle_ping_action,
+    "claude_permission_response": handle_claude_permission_response,
 }
 
 @router.websocket("/ws")
@@ -351,6 +361,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 "muted": vol_muted
             }
         })
+
+        for pending_msg in claude_permission_service.broker.pending_messages():
+            await websocket.send_json(pending_msg)
 
     except asyncio.TimeoutError:
         logger.warning(f"Timeout no handshake WebSocket de {client_ip}. Fechando conexao.")
