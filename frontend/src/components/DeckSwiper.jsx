@@ -72,6 +72,9 @@ export function DeckSwiper({
         noSwiping={true}
         noSwipingSelector=".swiper-no-swiping"
       >
+        <SwiperSlide key="claude_usage" className="deck-slide">
+          <ClaudeUsage claudeUsage={claudeUsage} />
+        </SwiperSlide>
         {pages.map((page) => {
           if (page.type === 'media') {
             return (
@@ -138,9 +141,6 @@ export function DeckSwiper({
             </SwiperSlide>
           );
         })}
-        <SwiperSlide key="claude_usage" className="deck-slide">
-          <ClaudeUsage claudeUsage={claudeUsage} />
-        </SwiperSlide>
       </Swiper>
     </div>
   );
