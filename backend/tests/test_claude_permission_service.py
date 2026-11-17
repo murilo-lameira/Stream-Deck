@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from services.claude_permission_service import PermissionBroker, summarize
+from services.claude_permission_service import PermissionBroker, describe, summarize
 
 
 def test_summarize_bash():
@@ -231,3 +231,51 @@ async def test_request_message_short_not_truncated():
     msg = bc.await_args.args[0]
     assert msg["truncated"] is False
     assert msg["summary_length"] == 2
+
+
+def test_summarize_powershell_not_json():
+    assert summarize("PowerShell", {"command": "Get-ChildItem C:/x"}) == "Get-ChildItem C:/x"
+
+
+def test_summarize_search_and_web_tools():
+    assert summarize("Glob", {"pattern": "**/*.py"}) == "**/*.py"
+    assert summarize("Grep", {"pattern": "foo"}) == "foo"
+    assert summarize("WebFetch", {"url": "https://a.com/x"}) == "https://a.com/x"
+    assert summarize("WebSearch", {"query": "fastapi"}) == "fastapi"
+
+
+def test_describe_uses_input_description():
+    assert describe("Bash", {"command": "ls", "description": "Listar arquivos"}) == "Listar arquivos"
+
+
+def test_describe_fallback_edit_only_filename():
+    assert describe("Edit", {"file_path": r"C:\Users\x\proj\main.py"}) == "Editar o arquivo main.py"
+
+
+def test_describe_fallbacks_by_tool():
+    assert describe("PowerShell", {}) == "Rodar um comando no PowerShell"
+    assert describe("WebFetch", {"url": "https://example.com/a?b=1"}) == "Abrir a página example.com"
+    assert describe("mcp__srv__do_it", {}) == "Usar a ferramenta do_it"
+    assert describe("Foo", {}) == "Usar a ferramenta Foo"
+
+
+def test_describe_truncates_160():
+    out = describe("Bash", {"description": "a" * 500})
+    assert len(out) == 160
+    assert out.endswith(chr(0x2026))
+
+
+def test_describe_sanitizes_bidi():
+    out = describe("Bash", {"description": "ok" + chr(0x202E) + "evil"})
+    assert chr(0x202E) not in out
+    assert chr(0xFFFD) in out
+
+
+@pytest.mark.asyncio
+async def test_request_message_has_description():
+    bc = AsyncMock()
+    broker = PermissionBroker(bc)
+    await broker.submit("PowerShell", {"command": "Get-Date"}, "F:/p")
+    msg = bc.await_args.args[0]
+    assert msg["description"] == "Rodar um comando no PowerShell"
+    assert msg["summary"] == "Get-Date"

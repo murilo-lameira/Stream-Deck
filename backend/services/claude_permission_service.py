@@ -25,13 +25,73 @@ REPLACEMENT_CHAR = chr(0xFFFD)
 ELLIPSIS = chr(0x2026)
 
 
+_SUMMARY_KEYS = {
+    "Bash": "command",
+    "PowerShell": "command",
+    "Edit": "file_path",
+    "Write": "file_path",
+    "Read": "file_path",
+    "Glob": "pattern",
+    "Grep": "pattern",
+    "WebFetch": "url",
+    "WebSearch": "query",
+}
+DESCRIPTION_MAX = 160
+
+
+def _file_name(path: str) -> str:
+    parts = [p for p in str(path or "").replace("\\", "/").split("/") if p]
+    return parts[-1] if parts else "?"
+
+
+def _host(url: str) -> str:
+    m = re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://(?:[^/@?#]*@)?([^/:?#]+)", str(url or ""))
+    return m.group(1) if m else "?"
+
+
+def describe(tool_name: str, tool_input: dict) -> str:
+    """Descricao curta em portugues do que o Claude quer fazer (max 160 chars)."""
+    tool_input = tool_input or {}
+    tool_name = str(tool_name or "")
+    given = tool_input.get("description")
+    if isinstance(given, str) and given.strip():
+        text = given.strip()
+    elif tool_name == "Bash":
+        text = "Rodar um comando no terminal"
+    elif tool_name == "PowerShell":
+        text = "Rodar um comando no PowerShell"
+    elif tool_name == "Write":
+        text = "Criar ou substituir o arquivo " + _file_name(tool_input.get("file_path"))
+    elif tool_name == "Edit":
+        text = "Editar o arquivo " + _file_name(tool_input.get("file_path"))
+    elif tool_name == "Read":
+        text = "Ler o arquivo " + _file_name(tool_input.get("file_path"))
+    elif tool_name in ("Glob", "Grep"):
+        text = "Procurar nos arquivos do projeto"
+    elif tool_name == "WebFetch":
+        text = "Abrir a página " + _host(tool_input.get("url"))
+    elif tool_name == "WebSearch":
+        text = "Pesquisar na web"
+    elif tool_name in ("Agent", "Task"):
+        text = "Iniciar um subagente"
+    elif tool_name.startswith("mcp__"):
+        text = "Usar a ferramenta " + (tool_name.split("__")[-1] or tool_name)
+    else:
+        text = "Usar a ferramenta " + tool_name
+    text = _UNSAFE_CHARS.sub(REPLACEMENT_CHAR, text)
+    if len(text) > DESCRIPTION_MAX:
+        text = text[: DESCRIPTION_MAX - 1] + ELLIPSIS
+    return text
+
+
 def summarize_full(tool_name: str, tool_input: dict) -> tuple[str, bool, int]:
     """Devolve (resumo exibivel, truncado, tamanho do resumo completo sanitizado)."""
     tool_input = tool_input or {}
-    if tool_name == "Bash":
-        text = str(tool_input.get("command", ""))
-    elif tool_name in ("Edit", "Write", "Read"):
-        text = str(tool_input.get("file_path", ""))
+    key = _SUMMARY_KEYS.get(tool_name)
+    if key is not None and key in tool_input:
+        text = str(tool_input.get(key, ""))
+    elif tool_name in ("Bash", "PowerShell", "Edit", "Write", "Read"):
+        text = ""
     else:
         text = json.dumps(tool_input, ensure_ascii=False, separators=(",", ":"))
     text = _UNSAFE_CHARS.sub(REPLACEMENT_CHAR, text)
@@ -59,6 +119,7 @@ class _Pending:
     deadline: float
     truncated: bool = False
     summary_length: int = 0
+    description: str = ""
     future: asyncio.Future = field(default_factory=lambda: asyncio.get_running_loop().create_future())
 
 
@@ -81,6 +142,7 @@ class PermissionBroker:
             "request_id": request_id,
             "tool_name": p.tool_name,
             "summary": p.summary,
+            "description": p.description,
             "truncated": p.truncated,
             "summary_length": p.summary_length,
             "project": p.project,
@@ -119,6 +181,7 @@ class PermissionBroker:
             deadline=time.monotonic() + self._timeout_s,
             truncated=truncated,
             summary_length=summary_length,
+            description=describe(tool_name, tool_input),
         )
         self._pending[request_id] = pending
         await self._broadcast(self._request_message(request_id, pending))
