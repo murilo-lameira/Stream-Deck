@@ -978,97 +978,254 @@
 .now-playing-banner { display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(12px); border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; white-space: nowrap; width: 100%; flex-shrink: 0; } .theme-dark .now-playing-banner { background: rgba(30, 41, 59, 0.5); border-color: rgba(255, 255, 255, 0.1); } .now-playing-icon { color: #10b981; flex-shrink: 0; } .now-playing-text-container { flex: 1; overflow: hidden; position: relative; } .now-playing-text { display: inline-block; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 100%; } .np-artist { color: var(--text-muted); font-weight: 500; font-size: 0.75rem; }
 
 /* ==========================================
-   Modal de permissao do Claude Code (OLED)
+   Modal de permissao do Claude Code (tela cheia, OLED)
    ========================================== */
-.claude-perm-backdrop {
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+@keyframes cpm-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes cpm-wave { 0%, 100% { transform: rotate(0deg); } 20% { transform: rotate(-28deg); } 40% { transform: rotate(8deg); } 60% { transform: rotate(-28deg); } 80% { transform: rotate(0deg); } }
+@keyframes cpm-hop { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-22px); } 55% { transform: translateY(0); } 70% { transform: translateY(-8px); } }
+@keyframes cpm-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes cpm-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.claude-perm-overlay {
+  position: fixed;
+  inset: 0;
   z-index: 2000;
-}
-
-.claude-perm-content,
-.theme-dark .claude-perm-content {
+  box-sizing: border-box;
   background: #000000;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #f8fafc;
+  color: #F5F4EF;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  padding: max(2vh, 10px) max(3vw, 16px) max(2.5vh, 12px);
+  overflow: hidden;
 }
 
-.claude-perm-header {
+.claude-perm-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.claude-perm-brand {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #A3A29C;
+}
+
+.claude-perm-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #D97757;
+  animation: cpm-pulse 1.4s ease-in-out infinite;
 }
 
 .claude-perm-position {
-  font-size: 0.8rem;
-  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+  color: #A3A29C;
+  border: 1px solid #2A2A28;
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
-.claude-perm-meta {
-  font-size: 0.85rem;
-  color: #cbd5e1;
-  margin-bottom: 10px;
-  word-break: break-word;
+.claude-perm-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 4vw;
+  align-items: center;
+}
+
+.claude-perm-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vh;
+  min-height: 0;
+}
+
+.claude-perm-mascot {
+  width: min(200px, 100%);
+  aspect-ratio: 24 / 18;
+  max-height: 36vh;
+}
+
+.claude-perm-mascot svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cpm-body { animation: cpm-bob 2.4s ease-in-out infinite; }
+.cpm-arm { transform-box: view-box; transform-origin: 19px 8px; animation: cpm-wave 1.6s ease-in-out infinite; }
+.cpm-eyes { transform-box: fill-box; transform-origin: center; animation: cpm-blink 4s infinite; }
+.claude-perm-mascot-allow .cpm-body { animation: cpm-hop 0.9s ease-out 2; }
+.claude-perm-mascot-allow .cpm-arm { animation: none; transform: rotate(-40deg); }
+.claude-perm-mascot-deny .cpm-body { animation: none; }
+.claude-perm-mascot-deny .cpm-arm { animation: none; transform: rotate(60deg); }
+
+.claude-perm-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2vh;
+  text-align: center;
+}
+
+.claude-perm-title {
+  margin: 0;
+  font-size: clamp(20px, 3.2vw, 26px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.claude-perm-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.claude-perm-tag {
+  font-size: 13px;
+  font-weight: 500;
+  color: #CFCEC8;
+  background: #141413;
+  border: 1px solid #2A2A28;
+  border-radius: 6px;
+  padding: 4px 9px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.claude-perm-tag-tool {
+  font-weight: 600;
+  color: #000000;
+  background: #D97757;
+  border-color: #D97757;
+}
+
+.claude-perm-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+  min-width: 0;
+  min-height: 0;
+}
+
+.claude-perm-cmd {
+  background: #0D0D0C;
+  border: 1px solid #242422;
+  border-radius: 14px;
+  padding: 14px 16px;
+  max-height: 28vh;
+  overflow: auto;
 }
 
 .claude-perm-summary {
-  background: #0a0a0a;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 12px;
-  margin: 0 0 10px;
-  max-height: 40vh;
-  overflow-y: auto;
-  font-size: 0.82rem;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #EDECE6;
   white-space: pre-wrap;
   word-break: break-word;
-  color: #e2e8f0;
-}
-
-.claude-perm-timer {
-  font-size: 0.8rem;
-  color: #fbbf24;
-  text-align: center;
-  margin-bottom: 14px;
-}
-
-.claude-perm-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.claude-perm-btn {
-  flex: 1;
-  min-height: 52px;
-  border-radius: 14px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
 }
 
 .claude-perm-truncated {
-  font-size: 0.8rem;
-  color: #fbbf24;
-  margin: -6px 0 12px;
+  font-size: 13px;
+  color: #A3A29C;
 }
 
-.claude-perm-arming {
-  opacity: 0.6;
+.claude-perm-countdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.claude-perm-bar {
+  height: 4px;
+  background: #1C1C1A;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.claude-perm-bar-fill {
+  height: 4px;
+  background: #D97757;
+  border-radius: 999px;
+  transition: width 1s linear;
+}
+
+.claude-perm-clock {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #A3A29C;
+}
+
+.claude-perm-clock-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #EDECE6;
+}
+
+.claude-perm-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.claude-perm-btn {
+  height: 68px;
+  min-height: 48px;
+  border-radius: 16px;
+  font-size: 19px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .claude-perm-btn:disabled {
-  opacity: 0.45;
+  cursor: default;
+  opacity: 0.55;
 }
 
 .claude-perm-deny {
-  background: #3f3f46;
+  border: 1px solid #3A3A37;
+  background: #000000;
+  color: #F5F4EF;
 }
 
 .claude-perm-allow {
-  background: #16a34a;
+  border: none;
+  background: #D97757;
+  color: #000000;
+  font-weight: 700;
+}
+
+@media (orientation: portrait) {
+  .claude-perm-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 3vh;
+  }
+  .claude-perm-mascot { max-height: 18vh; }
+  .claude-perm-cmd { max-height: 30vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cpm-body, .cpm-arm, .cpm-eyes, .claude-perm-live-dot { animation: none !important; }
+  .claude-perm-bar-fill { transition: none; }
 }
 
 /* ==========================================
