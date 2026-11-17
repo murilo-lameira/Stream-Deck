@@ -4,7 +4,6 @@ import { DeckSwiper } from './components/DeckSwiper';
 import { SettingsModal } from './components/SettingsModal';
 import { ConfirmModal } from './components/ConfirmModal';
 import { 
-  DEFAULT_AUTH_TOKEN, 
   getDefaultWebSocketUrl, 
   STORAGE_KEY_TOKEN, 
   STORAGE_KEY_SERVER 
@@ -49,7 +48,7 @@ export function App() {
         console.error('Falha ao processar token da URL:', err);
       }
     }
-    return localStorage.getItem(STORAGE_KEY_TOKEN) || DEFAULT_AUTH_TOKEN;
+    return localStorage.getItem(STORAGE_KEY_TOKEN) || '';
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

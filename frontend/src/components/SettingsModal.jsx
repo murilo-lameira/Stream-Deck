@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, RotateCcw, Shield, Server, Copy, Check } from 'lucide-react';
-import { DEFAULT_AUTH_TOKEN, getDefaultWebSocketUrl } from '../config/constants';
+import { getDefaultWebSocketUrl } from '../config/constants';
 
 export function SettingsModal({
   isOpen,
@@ -23,7 +23,7 @@ export function SettingsModal({
 
   const handleReset = () => {
     setUrl(getDefaultWebSocketUrl());
-    setToken(DEFAULT_AUTH_TOKEN);
+    setToken('');
   };
 
   const handleCopyPairingLink = async () => {

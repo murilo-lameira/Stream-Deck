@@ -62,6 +62,13 @@ export function useWebSocket(url, authToken) {
 
     if (!url) return;
 
+    // Sem token nao ha handshake possivel: nao abre o WebSocket e orienta o pareamento
+    if (!authToken) {
+      setStatus('ERROR');
+      setErrorMessage('Abra o link de pareamento');
+      return;
+    }
+
     if (!isRetry) {
       setStatus('CONNECTING');
     }
