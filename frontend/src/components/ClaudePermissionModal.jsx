@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { hapticFeedback } from '../utils/haptics';
 
 function formatRemaining(deadline) {
@@ -8,19 +8,24 @@ function formatRemaining(deadline) {
   return `${m}:${s}`;
 }
 
-const ARMING_DELAY_MS = 800;
+// Entrada: mascote cai e puxa o pedido (~2,45 s); botoes armam 800 ms depois
+const ENTRY_MS = 2450;
+const ARMING_DELAY_MS = ENTRY_MS + 800;
 
-function Mascot({ state }) {
+const Mascot = React.forwardRef(function Mascot({ state }, ref) {
   return (
-    <div className={`claude-perm-mascot claude-perm-mascot-${state}`}>
+    <div ref={ref} className={`claude-perm-mascot claude-perm-mascot-${state}`}>
+      <div className="cpm-drop"><div className="cpm-lean"><div className="cpm-step"><div className="cpm-squash">
       <svg viewBox="0 0 24 18" shapeRendering="crispEdges" aria-hidden="true">
         <rect x="6" y="16" width="12" height="1" fill="#1C1C1A" />
         <g className="cpm-body">
           <rect x="5" y="4" width="14" height="9" fill="#D97757" />
           <rect x="3" y="8" width="2" height="2" fill="#D97757" />
-          <g className="cpm-arm">
-            <rect x="19" y="3" width="2" height="5" fill="#D97757" />
-            <rect x="19" y="8" width="1" height="2" fill="#D97757" />
+          <g className="cpm-grab">
+            <g className="cpm-arm">
+              <rect x="19" y="3" width="2" height="5" fill="#D97757" />
+              <rect x="19" y="8" width="1" height="2" fill="#D97757" />
+            </g>
           </g>
           <g className="cpm-eyes">
             <rect x="8" y="6" width="1" height="2" fill="#000000" />
@@ -32,9 +37,11 @@ function Mascot({ state }) {
           <rect x="17" y="13" width="1" height="2" fill="#D97757" />
         </g>
       </svg>
+      </div></div></div></div>
+      <div className="cpm-rope" />
     </div>
   );
-}
+});
 
 export function ClaudePermissionModal({ request, position, total, onRespond }) {
   const [, setTick] = useState(0);
@@ -43,7 +50,25 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
   const [armed, setArmed] = useState(false);
   const armedAtRef = useRef(Infinity);
   const lastPointerDownRef = useRef(null);
+  const [entering, setEntering] = useState(false);
+  const overlayRef = useRef(null);
+  const mascotRef = useRef(null);
+  const rightRef = useRef(null);
   const initialMsRef = useRef(Math.max(request.deadline - Date.now(), 1));
+
+  // Mede o layout (ainda sem animacao) e so entao dispara a entrada
+  useLayoutEffect(() => {
+    const overlay = overlayRef.current;
+    const mascot = mascotRef.current;
+    const right = rightRef.current;
+    if (overlay && mascot && right) {
+      const m = mascot.getBoundingClientRect();
+      const r = right.getBoundingClientRect();
+      overlay.style.setProperty('--cpm-pull', `${Math.max(Math.round(window.innerWidth - r.left), 0)}px`);
+      overlay.style.setProperty('--cpm-rope', `${Math.max(Math.round(r.left - m.right), 0)}px`);
+    }
+    setEntering(true);
+  }, []);
 
   // Atraso de armamento: evita toque acidental logo que o modal aparece
   useEffect(() => {
@@ -78,7 +103,7 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
   const mascotState = decision === 'allow' ? 'allow' : decision === 'deny' ? 'deny' : 'idle';
 
   return (
-    <div className="claude-perm-overlay" role="dialog" aria-modal="true"
+    <div ref={overlayRef} className={`claude-perm-overlay${entering ? ' cpm-enter' : ''}`} role="dialog" aria-modal="true"
       onPointerDownCapture={() => { lastPointerDownRef.current = Date.now(); }}>
       <div className="claude-perm-topbar">
         <div className="claude-perm-brand">
@@ -90,9 +115,9 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
 
       <div className="claude-perm-main">
         <div className="claude-perm-left">
-          <Mascot state={mascotState} />
+          <Mascot ref={mascotRef} state={mascotState} />
           {decision === null && (
-            <div className="claude-perm-heading">
+            <div className="claude-perm-heading cpm-title">
               <h1 className="claude-perm-title">Posso rodar isso?</h1>
               <div className="claude-perm-tags">
                 <span className="claude-perm-tag claude-perm-tag-tool">{request.tool_name}</span>
@@ -104,20 +129,20 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
           {decision === 'deny' && <h1 className="claude-perm-title">Negado</h1>}
         </div>
 
-        <div className="claude-perm-right">
+        <div ref={rightRef} className="claude-perm-right">
           {request.description && (
-            <p className="claude-perm-desc">{request.description}</p>
+            <p className="claude-perm-desc cpm-rest">{request.description}</p>
           )}
-          <div className="claude-perm-cmd">
+          <div className="claude-perm-cmd cpm-rest">
             <pre className="claude-perm-summary">{request.summary}</pre>
           </div>
           {request.truncated && (
-            <div className="claude-perm-truncated">
+            <div className="claude-perm-truncated cpm-rest">
               (truncado — {request.summary_length} caracteres no total; confira no PC)
             </div>
           )}
 
-          <div className="claude-perm-countdown">
+          <div className="claude-perm-countdown cpm-late">
             <div className="claude-perm-bar"><div className="claude-perm-bar-fill" style={{ width: `${pct}%` }} /></div>
             <div className="claude-perm-clock">
               <span>Expira em</span>
@@ -125,7 +150,7 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
             </div>
           </div>
 
-          <div className="claude-perm-actions">
+          <div className="claude-perm-actions cpm-late">
             <button type="button" className="claude-perm-btn claude-perm-deny" disabled={sent || !armed} onClick={() => respond('deny')}>
               Negar
             </button>

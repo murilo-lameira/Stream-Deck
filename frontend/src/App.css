@@ -1211,6 +1211,7 @@
 .claude-perm-btn:disabled {
   cursor: default;
   opacity: 0.55;
+  pointer-events: none;
 }
 
 .claude-perm-deny {
@@ -1237,9 +1238,59 @@
   .claude-perm-cmd { max-height: 18vh; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .cpm-body, .cpm-arm, .cpm-eyes, .claude-perm-live-dot { animation: none !important; }
-  .claude-perm-bar-fill { transition: none; }
+/* Entrada: o mascote cai, agarra o pedido com uma corda e o puxa (so dispara apos medir o layout) */
+.claude-perm-mascot { position: relative; }
+.cpm-drop, .cpm-lean, .cpm-step, .cpm-squash { width: 100%; height: 100%; }
+.cpm-lean, .cpm-squash { transform-origin: 50% 100%; }
+.cpm-grab { transform-box: view-box; transform-origin: 19px 8px; }
+.cpm-rope {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  height: 3px;
+  margin-top: -1.5px;
+  width: var(--cpm-rope, 0px);
+  background: #D97757;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
+@keyframes cpm-e-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cpm-e-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cpm-e-drop { from { transform: translateY(-320px); } to { transform: translateY(0); } }
+@keyframes cpm-e-squash { 0%, 59.9% { transform: scale(1, 1); } 60% { transform: scale(1.2, 0.76); } 80% { transform: scale(0.94, 1.07); } 100% { transform: scale(1, 1); } }
+@keyframes cpm-e-pull { from { transform: translateX(var(--cpm-pull, 0px)); } to { transform: translateX(0); } }
+@keyframes cpm-e-colpull {
+  0% { transform: translateX(var(--cpm-pull, 0px)); animation-timing-function: cubic-bezier(.45, 0, .25, 1); }
+  69.6% { transform: translateX(0); animation-timing-function: ease-out; }
+  81.3% { transform: translateX(-8px); animation-timing-function: ease-out; }
+  100% { transform: translateX(0); }
+}
+@keyframes cpm-e-lean { 0%, 100% { transform: rotate(0); } 15%, 82.5% { transform: rotate(-8deg); } }
+@keyframes cpm-e-step { 0%, 25%, 50%, 75%, 100% { transform: translateY(0); } 12.5%, 37.5%, 62.5%, 87.5% { transform: translateY(-5px); } }
+@keyframes cpm-e-grab { 0%, 100% { transform: rotate(0); } 15.4%, 80% { transform: rotate(90deg); } }
+@keyframes cpm-e-rope { 0%, 100% { transform: scaleX(0); } 16%, 80% { transform: scaleX(1); } }
+
+.cpm-enter .claude-perm-topbar { animation: cpm-e-fade 0.3s linear 0.1s backwards; }
+.cpm-enter .cpm-drop { animation: cpm-e-drop 0.45s cubic-bezier(.55, 0, 1, .45) backwards; }
+.cpm-enter .cpm-squash { animation: cpm-e-squash 0.75s linear backwards; }
+.cpm-enter .claude-perm-mascot { animation: cpm-e-pull 0.8s cubic-bezier(.45, 0, .25, 1) 0.9s backwards; }
+.cpm-enter .cpm-lean { animation: cpm-e-lean 0.8s ease-in-out 0.9s backwards; }
+.cpm-enter .cpm-step { animation: cpm-e-step 0.8s linear 0.9s backwards; }
+.cpm-enter .cpm-grab { animation: cpm-e-grab 1.3s ease-in-out 0.65s backwards; }
+.cpm-enter .cpm-rope { animation: cpm-e-rope 1.25s ease-in-out 0.7s backwards; }
+.cpm-enter .claude-perm-right { animation: cpm-e-colpull 1.15s linear 0.9s backwards; }
+.cpm-enter .cpm-title { animation: cpm-e-rise 0.4s ease-out 1.9s backwards; }
+.cpm-enter .cpm-late { animation: cpm-e-rise 0.4s ease-out 2.05s backwards; }
+.cpm-enter .claude-perm-mascot-idle .cpm-body { animation-delay: 2.4s; }
+.cpm-enter .claude-perm-mascot-idle .cpm-arm { animation-delay: 2.4s; }
+
+@media (orientation: portrait) {
+  .cpm-enter .claude-perm-mascot, .cpm-enter .cpm-lean, .cpm-enter .cpm-step,
+  .cpm-enter .cpm-grab, .cpm-enter .cpm-rope, .cpm-enter .claude-perm-right { animation: none; }
+  .cpm-rope { display: none; }
+  .cpm-enter .cpm-rest { animation: cpm-e-rise 0.4s ease-out 1.9s backwards; }
 }
 
 /* ==========================================
