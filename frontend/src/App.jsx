@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { DeckSwiper } from './components/DeckSwiper';
 import { SettingsModal } from './components/SettingsModal';
 import { ConfirmModal } from './components/ConfirmModal';
+import { ClaudePermissionModal } from './components/ClaudePermissionModal';
 import { 
   getDefaultWebSocketUrl, 
   STORAGE_KEY_TOKEN, 
@@ -13,6 +14,13 @@ import { useWakeLock } from './hooks/useWakeLock';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { hapticFeedback } from './utils/haptics';
 import './App.css';
+
+const PERMISSION_OUTCOME_TOASTS = {
+  allow: 'Permitido',
+  deny: 'Negado',
+  expired: 'Expirou — responda no PC',
+  cancelled: 'Cancelado no PC'
+};
 
 export function App() {
   const [wsUrl, setWsUrl] = useState(() => {
@@ -70,7 +78,9 @@ export function App() {
     runningApps,
     catalog,
     changeVolume, 
-    toggleMute 
+    toggleMute,
+    permissionQueue,
+    respondPermission
   } = useWebSocket(
     wsUrl,
     authToken
@@ -100,6 +110,12 @@ export function App() {
       }
     } else if (lastMessage.type === 'auth_success') {
       showToast('Conectado e Autenticado!', 'success');
+    } else if (lastMessage.type === 'claude_permission_resolved') {
+      const text = PERMISSION_OUTCOME_TOASTS[lastMessage.outcome];
+      if (text) {
+        const ok = lastMessage.outcome === 'allow' || lastMessage.outcome === 'deny';
+        showToast(text, ok ? 'success' : 'info');
+      }
     }
   }, [lastMessage]);
 
@@ -265,6 +281,16 @@ export function App() {
         onConfirm={confirmShutdown}
         onCancel={() => setPendingShutdown(false)}
       />
+
+      {permissionQueue.length > 0 && (
+        <ClaudePermissionModal
+          key={permissionQueue[0].request_id}
+          request={permissionQueue[0]}
+          position={1}
+          total={permissionQueue.length}
+          onRespond={respondPermission}
+        />
+      )}
     </div>
   );
 }

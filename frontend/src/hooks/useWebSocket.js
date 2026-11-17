@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { hapticFeedback } from '../utils/haptics';
 
 export function useWebSocket(url, authToken) {
   const [status, setStatus] = useState('CONNECTING'); // 'CONNECTING' | 'CONNECTED' | 'AUTHENTICATED' | 'RECONNECTING' | 'ERROR'
@@ -9,6 +10,7 @@ export function useWebSocket(url, authToken) {
   const [systemStatus, setSystemStatus] = useState({ nowPlaying: null, micMuted: false, metrics: null });
   const [runningApps, setRunningApps] = useState([]);
   const [catalog, setCatalog] = useState(null);
+  const [permissionQueue, setPermissionQueue] = useState([]);
   
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
@@ -142,6 +144,21 @@ export function useWebSocket(url, authToken) {
             if (data.running_apps) {
               setRunningApps(data.running_apps);
             }
+          } else if (data.type === 'claude_permission_request') {
+            const item = {
+              request_id: data.request_id,
+              tool_name: data.tool_name,
+              summary: data.summary,
+              project: data.project,
+              deadline: Date.now() + (Number(data.expires_in) || 0) * 1000
+            };
+            setPermissionQueue((prev) => {
+              if (prev.some((p) => p.request_id === item.request_id)) return prev;
+              hapticFeedback.warning();
+              return [...prev, item];
+            });
+          } else if (data.type === 'claude_permission_resolved') {
+            setPermissionQueue((prev) => prev.filter((p) => p.request_id !== data.request_id));
           }
         } catch (e) {
           console.error('Erro ao processar mensagem do WebSocket:', e);
@@ -256,6 +273,30 @@ export function useWebSocket(url, authToken) {
     }
   }, []);
 
+  const respondPermission = useCallback((requestId, decision) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    try {
+      wsRef.current.send(JSON.stringify({
+        action: 'claude_permission_response',
+        request_id: requestId,
+        decision
+      }));
+    } catch (err) {
+      console.error('Erro ao enviar resposta de permissao:', err);
+    }
+  }, []);
+
+  // Remove localmente pedidos cujo prazo venceu (o servidor tambem envia "expired")
+  useEffect(() => {
+    if (permissionQueue.length === 0) return undefined;
+    const next = Math.min(...permissionQueue.map((p) => p.deadline));
+    const timer = setTimeout(() => {
+      const now = Date.now();
+      setPermissionQueue((prev) => prev.filter((p) => p.deadline > now));
+    }, Math.max(next - Date.now(), 0) + 50);
+    return () => clearTimeout(timer);
+  }, [permissionQueue]);
+
   return {
     status,
     lastMessage,
@@ -267,6 +308,8 @@ export function useWebSocket(url, authToken) {
     catalog,
     changeVolume,
     toggleMute,
+    permissionQueue,
+    respondPermission,
     reconnect: connect
   };
 }

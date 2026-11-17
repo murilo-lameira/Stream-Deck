@@ -976,3 +976,87 @@
 
 
 .now-playing-banner { display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(12px); border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; white-space: nowrap; width: 100%; flex-shrink: 0; } .theme-dark .now-playing-banner { background: rgba(30, 41, 59, 0.5); border-color: rgba(255, 255, 255, 0.1); } .now-playing-icon { color: #10b981; flex-shrink: 0; } .now-playing-text-container { flex: 1; overflow: hidden; position: relative; } .now-playing-text { display: inline-block; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 100%; } .np-artist { color: var(--text-muted); font-weight: 500; font-size: 0.75rem; }
+
+/* ==========================================
+   Modal de permissao do Claude Code (OLED)
+   ========================================== */
+.claude-perm-backdrop {
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  z-index: 2000;
+}
+
+.claude-perm-content,
+.theme-dark .claude-perm-content {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+}
+
+.claude-perm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.claude-perm-position {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.claude-perm-meta {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+
+.claude-perm-summary {
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 0 10px;
+  max-height: 40vh;
+  overflow-y: auto;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #e2e8f0;
+}
+
+.claude-perm-timer {
+  font-size: 0.8rem;
+  color: #fbbf24;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.claude-perm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.claude-perm-btn {
+  flex: 1;
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.claude-perm-btn:disabled {
+  opacity: 0.45;
+}
+
+.claude-perm-deny {
+  background: #3f3f46;
+}
+
+.claude-perm-allow {
+  background: #16a34a;
+}
