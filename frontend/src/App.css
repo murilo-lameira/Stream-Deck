@@ -1381,3 +1381,69 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Pagina de limites da conta do Claude */
+.usage-page {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #F5F4EF;
+  box-sizing: border-box;
+}
+.usage-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.usage-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.usage-mascot { width: 36px; height: 27px; flex: none; }
+.usage-mascot-body { animation: usage-bob 2.4s ease-in-out infinite; }
+.usage-mascot-eyes { transform-box: fill-box; transform-origin: center; animation: usage-blink 4s infinite; }
+.usage-brand-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.usage-brand-kicker { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #A3A29C; }
+.usage-brand-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.usage-updated { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #A3A29C; white-space: nowrap; }
+.usage-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: usage-dot 1.4s ease-in-out infinite; }
+.usage-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.usage-card {
+  min-height: 0;
+  background: #0D0D0C;
+  border: 1px solid #242422;
+  border-radius: 16px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.usage-card-head { align-self: stretch; display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.usage-card-title { font-size: 14px; font-weight: 600; }
+.usage-card-window { font-size: 11px; color: #A3A29C; }
+.usage-ring { position: relative; flex: 1; min-height: 0; aspect-ratio: 1 / 1; max-width: 100%; }
+.usage-ring svg { width: 100%; height: 100%; display: block; }
+.usage-ring-fill { animation: usage-fill 1.2s cubic-bezier(.25, .8, .25, 1) both; transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease; }
+.usage-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.usage-ring-pct { font-size: clamp(20px, 7vh, 32px); font-weight: 700; letter-spacing: -0.03em; }
+.usage-ring-sub { font-size: 11px; color: #A3A29C; }
+.usage-card-foot {
+  align-self: stretch;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  color: #A3A29C;
+  border-top: 1px solid #1C1C1A;
+  padding-top: 6px;
+}
+.usage-card-foot-val { font-family: 'JetBrains Mono', ui-monospace, monospace; color: #EDECE6; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.usage-empty { text-align: center; font-size: 12px; color: #A3A29C; }
+@keyframes usage-fill { from { stroke-dashoffset: 326.73; } }
+@keyframes usage-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes usage-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+@keyframes usage-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }

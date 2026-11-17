@@ -86,6 +86,7 @@ export function App() {
     changeVolume, 
     toggleMute,
     permissionQueue,
+    claudeUsage,
     respondPermission
   } = useWebSocket(
     wsUrl,
@@ -279,6 +280,7 @@ export function App() {
           catalog={catalog}
           onVolumeChange={changeVolume}
           onToggleMute={toggleMute}
+          claudeUsage={claudeUsage}
         />
       </main>
 

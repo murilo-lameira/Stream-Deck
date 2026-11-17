@@ -4,6 +4,7 @@ import { Pagination, EffectCreative } from 'swiper/modules';
 import { DeckButton } from './DeckButton';
 import { VolumeSlider } from './VolumeSlider';
 import { NowPlaying } from './NowPlaying';
+import { ClaudeUsage } from './ClaudeUsage';
 import { PAGE1_APPS, MEDIA_APPS, PAGE3_APPS } from '../config/apps';
 import { hapticFeedback } from '../utils/haptics';
 
@@ -20,6 +21,7 @@ export function DeckSwiper({
   catalog,
   onVolumeChange,
   onToggleMute,
+  claudeUsage,
 }) {
   // Constrói páginas dinâmicas a partir do catálogo do backend ou usa fallback
   const pages = (catalog && Array.isArray(catalog.pages) && catalog.pages.length > 0)
@@ -136,6 +138,9 @@ export function DeckSwiper({
             </SwiperSlide>
           );
         })}
+        <SwiperSlide key="claude_usage" className="deck-slide">
+          <ClaudeUsage claudeUsage={claudeUsage} />
+        </SwiperSlide>
       </Swiper>
     </div>
   );

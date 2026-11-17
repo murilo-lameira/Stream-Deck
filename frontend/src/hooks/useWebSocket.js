@@ -11,6 +11,7 @@ export function useWebSocket(url, authToken, { onAuthRejected } = {}) {
   const [runningApps, setRunningApps] = useState([]);
   const [catalog, setCatalog] = useState(null);
   const [permissionQueue, setPermissionQueue] = useState([]);
+  const [claudeUsage, setClaudeUsage] = useState(null);
   
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
@@ -173,6 +174,14 @@ export function useWebSocket(url, authToken, { onAuthRejected } = {}) {
           } else if (data.type === 'action_result' && data.status === 'error' && data.request_id) {
             seenPermissionIdsRef.current.delete(data.request_id);
             setPermissionQueue((prev) => prev.filter((p) => p.request_id !== data.request_id));
+          } else if (data.type === 'claude_usage') {
+            setClaudeUsage({
+              five_hour: data.five_hour || null,
+              seven_day: data.seven_day || null,
+              context_pct: typeof data.context_pct === 'number' ? data.context_pct : null,
+              model: data.model || null,
+              updated_at: typeof data.updated_at === 'number' ? data.updated_at : null
+            });
           } else if (data.type === 'claude_permission_resolved') {
             setPermissionQueue((prev) => prev.filter((p) => p.request_id !== data.request_id));
           }
@@ -327,6 +336,7 @@ export function useWebSocket(url, authToken, { onAuthRejected } = {}) {
     changeVolume,
     toggleMute,
     permissionQueue,
+    claudeUsage,
     respondPermission,
     reconnect: connect
   };
