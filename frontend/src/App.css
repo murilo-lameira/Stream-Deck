@@ -1049,6 +1049,16 @@
   color: #ffffff;
 }
 
+.claude-perm-truncated {
+  font-size: 0.8rem;
+  color: #fbbf24;
+  margin: -6px 0 12px;
+}
+
+.claude-perm-arming {
+  opacity: 0.6;
+}
+
 .claude-perm-btn:disabled {
   opacity: 0.45;
 }

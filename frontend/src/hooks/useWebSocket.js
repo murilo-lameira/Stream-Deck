@@ -117,6 +117,9 @@ export function useWebSocket(url, authToken) {
 
           if (data.type === 'auth_success') {
             setStatus('AUTHENTICATED');
+            // Servidor reenvia os pedidos pendentes logo apos auth_success
+            seenPermissionIdsRef.current = new Set();
+            setPermissionQueue([]);
             if (data.volume) {
               setVolumeState(data.volume);
             }
@@ -151,6 +154,8 @@ export function useWebSocket(url, authToken) {
               tool_name: data.tool_name,
               summary: data.summary,
               project: data.project,
+              truncated: data.truncated === true,
+              summary_length: Number(data.summary_length) || 0,
               deadline: Date.now() + (Number(data.expires_in) || 0) * 1000
             };
             if (!seenPermissionIdsRef.current.has(item.request_id)) {
@@ -160,6 +165,9 @@ export function useWebSocket(url, authToken) {
                 prev.some((p) => p.request_id === item.request_id) ? prev : [...prev, item]
               ));
             }
+          } else if (data.type === 'action_result' && data.status === 'error' && data.request_id) {
+            seenPermissionIdsRef.current.delete(data.request_id);
+            setPermissionQueue((prev) => prev.filter((p) => p.request_id !== data.request_id));
           } else if (data.type === 'claude_permission_resolved') {
             setPermissionQueue((prev) => prev.filter((p) => p.request_id !== data.request_id));
           }
@@ -277,6 +285,7 @@ export function useWebSocket(url, authToken) {
   }, []);
 
   const respondPermission = useCallback((requestId, decision) => {
+    if (status !== 'AUTHENTICATED') return false;
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return false;
     try {
       wsRef.current.send(JSON.stringify({
@@ -289,7 +298,7 @@ export function useWebSocket(url, authToken) {
       console.error('Erro ao enviar resposta de permissao:', err);
       return false;
     }
-  }, []);
+  }, [status]);
 
   // Remove localmente pedidos cujo prazo venceu (o servidor tambem envia "expired")
   useEffect(() => {
