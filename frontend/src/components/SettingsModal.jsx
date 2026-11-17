@@ -29,7 +29,8 @@ export function SettingsModal({
   };
 
   const handleRepair = () => {
-    if (url !== currentUrl) onSave({ url });
+    const trimmed = url.trim();
+    if (trimmed && trimmed !== currentUrl) onSave({ url: trimmed });
     onRepair();
     onClose();
   };

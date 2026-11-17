@@ -209,7 +209,7 @@ export function App() {
           backgroundColor: '#000000',
           position: 'fixed',
           inset: 0,
-          zIndex: 9999,
+          zIndex: 900,
           cursor: 'pointer',
           userSelect: 'none',
           display: 'flex',
