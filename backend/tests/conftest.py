@@ -35,3 +35,10 @@ def test_client(mock_discovery):
     with TestClient(app) as client:
         yield client
 
+@pytest.fixture
+def loopback_override():
+    from main import app
+    from routers.security_deps import require_loopback
+    app.dependency_overrides[require_loopback] = lambda: None
+    yield
+    app.dependency_overrides.pop(require_loopback, None)

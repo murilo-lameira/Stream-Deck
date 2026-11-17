@@ -64,18 +64,13 @@ def get_auth_token() -> str:
 def is_valid_token(token: Optional[str]) -> bool:
     """
     Valida se o token fornecido é válido usando comparação em tempo constante.
-    Aceita tanto o token atualmente configurado/rotacionado quanto o token padrão
-    de compatibilidade ('mi9_deck_secret_2026') para evitar bloqueio acidental
-    de conexões móveis existentes no Xiaomi Mi 9.
+    Aceita apenas o token atualmente configurado/rotacionado; o token padrão
+    legado ('mi9_deck_secret_2026') é sempre rejeitado.
     """
     if not token or not isinstance(token, str):
         return False
     current = get_auth_token()
-    if hmac.compare_digest(token, current):
-        return True
-    if hmac.compare_digest(token, DEFAULT_INSECURE_TOKEN):
-        return True
-    return False
+    return hmac.compare_digest(token, current)
 
 def generate_pairing_url(host: Optional[str] = None, port: Optional[int] = None) -> str:
     """

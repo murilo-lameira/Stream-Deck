@@ -1,7 +1,7 @@
 import os
 import pytest
 from unittest.mock import patch
-from services.auth_service import get_auth_token, rotate_token, generate_pairing_url, DEFAULT_INSECURE_TOKEN
+from services.auth_service import get_auth_token, rotate_token, generate_pairing_url, is_valid_token, DEFAULT_INSECURE_TOKEN
 
 def test_get_auth_token_returns_existing(test_token):
     token = get_auth_token()
@@ -34,13 +34,26 @@ def test_generate_pairing_url(test_token):
     url = generate_pairing_url("192.168.1.50", 8000)
     assert url == f"http://192.168.1.50:8000?token={test_token}"
 
-def test_endpoint_get_pairing_info(test_client, test_token):
+def test_endpoint_get_pairing_info(test_client, test_token, loopback_override):
     response = test_client.get("/api/v1/deck/pairing")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
     assert data["auth_token"] == test_token
     assert f"?token={test_token}" in data["pairing_url"]
+
+def test_legacy_token_rejected():
+    assert is_valid_token(DEFAULT_INSECURE_TOKEN) is False
+
+def test_pairing_forbidden_from_lan(test_client):
+    response = test_client.get("/api/v1/deck/pairing")
+    assert response.status_code == 403
+
+def test_pairing_uses_lan_ip(test_client, loopback_override):
+    with patch("routers.deck_router.get_local_ip", return_value="192.168.0.9"):
+        response = test_client.get("/api/v1/deck/pairing")
+    assert response.status_code == 200
+    assert response.json()["pairing_url"].startswith("http://192.168.0.9:")
 
 def test_endpoint_rotate_pairing_token_unauthorized(test_client):
     response = test_client.post("/api/v1/deck/pairing/rotate")

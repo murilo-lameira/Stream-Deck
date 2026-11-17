@@ -15,6 +15,7 @@ from services.macro_service import load_macros, execute_macro, dispatch_webhook
 from services.media_service import get_current_art
 from services.auth_service import get_auth_token, rotate_token, generate_pairing_url, is_valid_token
 from services.network_service import get_local_ip
+from routers.security_deps import require_loopback
 from schemas.deck_schemas import AuthPayload, DeckActionPayload, TriggerPayload
 
 logger = logging.getLogger("streamdeck.router")
@@ -39,9 +40,9 @@ def verify_bearer_token(authorization: Optional[str] = Header(None)) -> bool:
     return True
 
 @router.get("/api/v1/deck/pairing")
-async def get_pairing_info(request: Request):
-    """Retorna a URL e o token de pareamento para conexão de dispositivos clientes."""
-    host = request.url.hostname or get_local_ip()
+async def get_pairing_info(request: Request, _: None = Depends(require_loopback)):
+    """Retorna a URL e o token de pareamento (restrito ao loopback) usando o IP da LAN."""
+    host = get_local_ip()
     port = request.url.port or int(os.getenv("PORT", 8000))
     token = get_auth_token()
     pairing_url = generate_pairing_url(host, port)
