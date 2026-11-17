@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class AuthPayload(BaseModel):
     """Payload de autenticação enviado no handshake inicial do WebSocket."""
@@ -48,3 +48,12 @@ class ActionResultMessage(BaseModel):
     app: Optional[str] = None
     message: str
 
+
+class ClaudePermissionHookInput(BaseModel):
+    """Entrada do hook PermissionRequest do Claude Code (campos extras ignorados)."""
+    model_config = ConfigDict(extra="ignore")
+
+    tool_name: str
+    tool_input: Dict[str, Any] = Field(default_factory=dict)
+    cwd: str = ""
+    session_id: Optional[str] = None
