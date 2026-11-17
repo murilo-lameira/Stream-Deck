@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse
 
 from services.network_service import get_local_ip, NetworkDiscoveryService
 from services.telemetry_service import system_telemetry_loop
+from services.claude_account_usage import usage_poll_loop
 from services.auth_service import generate_pairing_url
 from routers.deck_router import router as deck_router, verify_bearer_token
 from routers.claude_router import router as claude_router
@@ -68,10 +69,12 @@ async def lifespan(app: FastAPI):
     
     await discovery_service.start()
     telemetry_task = asyncio.create_task(system_telemetry_loop())
+    usage_task = asyncio.create_task(usage_poll_loop())
 
     yield
 
     telemetry_task.cancel()
+    usage_task.cancel()
     await discovery_service.stop()
     logger.info("Stream Deck Backend finalizado.")
 

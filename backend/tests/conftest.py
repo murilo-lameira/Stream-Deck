@@ -25,7 +25,8 @@ def test_token():
 def mock_discovery():
     with patch("main.discovery_service.start", new_callable=AsyncMock), \
          patch("main.discovery_service.stop", new_callable=AsyncMock), \
-         patch("main.system_telemetry_loop", new_callable=AsyncMock):
+         patch("main.system_telemetry_loop", new_callable=AsyncMock), \
+         patch("main.usage_poll_loop", new_callable=AsyncMock):
         yield
 
 @pytest.fixture

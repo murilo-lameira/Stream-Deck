@@ -19,14 +19,26 @@ class UsageStore:
         context_pct: Optional[float] = None,
         model: Optional[str] = None,
     ) -> bool:
-        """Guarda o valor novo. Retorna True se deve fazer broadcast."""
+        """Guarda o valor novo. Retorna True se deve fazer broadcast.
+
+        Campos None mantem o valor anterior: a barra de status (contexto e
+        modelo) e o leitor da conta (janelas de 5 h e 7 dias) se completam.
+        """
         now = self._clock()
-        new = {
-            "five_hour": five_hour,
-            "seven_day": seven_day,
-            "context_pct": context_pct,
-            "model": model,
-        }
+        new = dict(self._data or {
+            "five_hour": None,
+            "seven_day": None,
+            "context_pct": None,
+            "model": None,
+        })
+        for key, value in (
+            ("five_hour", five_hour),
+            ("seven_day", seven_day),
+            ("context_pct", context_pct),
+            ("model", model),
+        ):
+            if value is not None:
+                new[key] = value
         changed = new != self._data
         self._data = new
         self._updated_at = int(now)
