@@ -119,6 +119,12 @@ export function App() {
     }
   }, [lastMessage]);
 
+  const handlePermissionRespond = (requestId, decision) => {
+    const ok = respondPermission(requestId, decision);
+    if (!ok) showToast('Sem conexão — tente de novo', 'error');
+    return ok;
+  };
+
   const handleLaunch = (appId) => {
     if (appId === 'shutdown_pc') {
       hapticFeedback.warning();
@@ -288,7 +294,7 @@ export function App() {
           request={permissionQueue[0]}
           position={1}
           total={permissionQueue.length}
-          onRespond={respondPermission}
+          onRespond={handlePermissionRespond}
         />
       )}
     </div>

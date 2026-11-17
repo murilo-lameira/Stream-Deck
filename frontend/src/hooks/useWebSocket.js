@@ -17,6 +17,7 @@ export function useWebSocket(url, authToken) {
   const heartbeatTimerRef = useRef(null);
   const lastActivityRef = useRef(0);
   const isUnmountedRef = useRef(false);
+  const seenPermissionIdsRef = useRef(new Set());
 
   const clearReconnectTimer = () => {
     if (reconnectTimerRef.current) {
@@ -152,11 +153,13 @@ export function useWebSocket(url, authToken) {
               project: data.project,
               deadline: Date.now() + (Number(data.expires_in) || 0) * 1000
             };
-            setPermissionQueue((prev) => {
-              if (prev.some((p) => p.request_id === item.request_id)) return prev;
+            if (!seenPermissionIdsRef.current.has(item.request_id)) {
+              seenPermissionIdsRef.current.add(item.request_id);
               hapticFeedback.warning();
-              return [...prev, item];
-            });
+              setPermissionQueue((prev) => (
+                prev.some((p) => p.request_id === item.request_id) ? prev : [...prev, item]
+              ));
+            }
           } else if (data.type === 'claude_permission_resolved') {
             setPermissionQueue((prev) => prev.filter((p) => p.request_id !== data.request_id));
           }
@@ -274,15 +277,17 @@ export function useWebSocket(url, authToken) {
   }, []);
 
   const respondPermission = useCallback((requestId, decision) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return false;
     try {
       wsRef.current.send(JSON.stringify({
         action: 'claude_permission_response',
         request_id: requestId,
         decision
       }));
+      return true;
     } catch (err) {
       console.error('Erro ao enviar resposta de permissao:', err);
+      return false;
     }
   }, []);
 

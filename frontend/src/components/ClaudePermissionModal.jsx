@@ -22,7 +22,7 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
     if (sent) return;
     setSent(true);
     hapticFeedback.medium();
-    onRespond(request.request_id, decision);
+    if (!onRespond(request.request_id, decision)) setSent(false);
   };
 
   return (
