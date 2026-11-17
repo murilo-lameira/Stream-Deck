@@ -105,6 +105,9 @@ export function ClaudePermissionModal({ request, position, total, onRespond }) {
         </div>
 
         <div className="claude-perm-right">
+          {request.description && (
+            <p className="claude-perm-desc">{request.description}</p>
+          )}
           <div className="claude-perm-cmd">
             <pre className="claude-perm-summary">{request.summary}</pre>
           </div>

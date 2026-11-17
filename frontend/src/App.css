@@ -1123,21 +1123,35 @@
   min-height: 0;
 }
 
+.claude-perm-desc {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #F5F4EF;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
 .claude-perm-cmd {
   background: #0D0D0C;
   border: 1px solid #242422;
-  border-radius: 14px;
-  padding: 14px 16px;
-  max-height: 28vh;
+  border-radius: 12px;
+  padding: 8px 12px;
+  max-height: 72px;
   overflow: auto;
 }
 
 .claude-perm-summary {
   margin: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 15px;
-  line-height: 1.5;
-  color: #EDECE6;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #A3A29C;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -1220,7 +1234,7 @@
     gap: 3vh;
   }
   .claude-perm-mascot { max-height: 18vh; }
-  .claude-perm-cmd { max-height: 30vh; }
+  .claude-perm-cmd { max-height: 18vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {

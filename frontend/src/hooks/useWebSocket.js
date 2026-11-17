@@ -157,6 +157,7 @@ export function useWebSocket(url, authToken, { onAuthRejected } = {}) {
               request_id: data.request_id,
               tool_name: data.tool_name,
               summary: data.summary,
+              description: data.description || '',
               project: data.project,
               truncated: data.truncated === true,
               summary_length: Number(data.summary_length) || 0,
