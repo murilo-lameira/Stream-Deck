@@ -49,3 +49,34 @@ def test_pending_resent_on_auth(test_client, test_token, monkeypatch):
         assert ws.receive_json()["type"] == "auth_success"
         assert ws.receive_json()["request_id"] == "r1"
         assert ws.receive_json()["request_id"] == "r2"
+
+
+def test_resend_failure_does_not_leave_socket_registered(test_client, test_token, monkeypatch):
+    from services import claude_permission_service
+    from managers.connection_manager import manager
+    from starlette.websockets import WebSocket
+
+    msgs = [{"type": "claude_permission_request", "request_id": "r1", "expires_in": 30}]
+    monkeypatch.setattr(claude_permission_service.broker, "pending_messages", lambda: msgs)
+
+    original = WebSocket.send_json
+
+    async def flaky(self, data, *a, **k):
+        if isinstance(data, dict) and data.get("type") == "claude_permission_request":
+            raise RuntimeError("socket morto")
+        return await original(self, data, *a, **k)
+
+    monkeypatch.setattr(WebSocket, "send_json", flaky)
+    monkeypatch.setattr(WebSocket, "close", AsyncNoop())
+    before = list(manager.active_connections)
+    with test_client.websocket_connect("/ws") as ws:
+        ws.send_json({"auth_token": test_token})
+        assert ws.receive_json()["type"] == "auth_success"
+    assert manager.active_connections == before
+
+
+class AsyncNoop:
+    def __call__(self, *a, **k):
+        async def _noop():
+            raise RuntimeError("close em socket morto")
+        return _noop()

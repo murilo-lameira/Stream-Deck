@@ -366,19 +366,26 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_json(pending_msg)
 
     except asyncio.TimeoutError:
+        manager.disconnect(websocket)
         logger.warning(f"Timeout no handshake WebSocket de {client_ip}. Fechando conexao.")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Timeout no handshake de autenticacao.")
         return
     except ValidationError as ve:
+        manager.disconnect(websocket)
         logger.warning(f"Formato de autenticacao invalido de {client_ip}: {ve}")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Payload de autenticacao malformado.")
         return
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
         logger.info(f"Cliente {client_ip} desconectou antes do handshake.")
         return
     except Exception as e:
+        manager.disconnect(websocket)
         logger.error(f"Erro durante o handshake de {client_ip}: {e}")
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Erro no handshake.")
+        try:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Erro no handshake.")
+        except Exception:
+            pass
         return
 
     # 2. Loop de Processamento de Comandos Validados
