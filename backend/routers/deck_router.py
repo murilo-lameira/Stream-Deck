@@ -15,7 +15,7 @@ from services.macro_service import load_macros, execute_macro, dispatch_webhook
 from services.media_service import get_current_art
 from services.auth_service import get_auth_token, rotate_token, generate_pairing_url, is_valid_token
 from services.network_service import get_local_ip
-from services import claude_permission_service
+from services import claude_permission_service, claude_usage_service
 from routers.security_deps import require_loopback
 from schemas.deck_schemas import AuthPayload, DeckActionPayload, TriggerPayload
 
@@ -370,6 +370,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
         for pending_msg in claude_permission_service.broker.pending_messages():
             await websocket.send_json(pending_msg)
+
+        usage_msg = claude_usage_service.store.snapshot()
+        if usage_msg is not None:
+            await websocket.send_json(usage_msg)
 
     except asyncio.TimeoutError:
         manager.disconnect(websocket)

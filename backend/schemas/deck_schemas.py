@@ -64,3 +64,18 @@ class ClaudePermissionHookInput(BaseModel):
 class PairConfirmInput(BaseModel):
     pair_id: str = Field(max_length=64)
     code: str = Field(pattern=r"^\d{4}$")
+
+
+class UsageWindow(BaseModel):
+    used_percentage: float = Field(..., ge=0, le=100)
+    resets_at: int = Field(..., ge=0)
+
+
+class ClaudeUsageInput(BaseModel):
+    """Limites da conta enviados pelo script de barra de status do Claude Code."""
+    model_config = ConfigDict(extra="ignore")
+
+    five_hour: Optional[UsageWindow] = None
+    seven_day: Optional[UsageWindow] = None
+    context_pct: Optional[float] = Field(default=None, ge=0, le=100)
+    model: Optional[str] = Field(default=None, max_length=64)

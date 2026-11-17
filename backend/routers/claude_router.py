@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, Request, Response
 from managers.connection_manager import manager
 from routers.deck_router import verify_bearer_token
 from routers.security_deps import require_loopback
-from schemas.deck_schemas import ClaudePermissionHookInput
-from services import claude_permission_service
+from schemas.deck_schemas import ClaudePermissionHookInput, ClaudeUsageInput
+from services import claude_permission_service, claude_usage_service
 
 logger = logging.getLogger("streamdeck.claude_router")
 
@@ -56,3 +56,22 @@ async def claude_permission(payload: ClaudePermissionHookInput, request: Request
             if not t.done():
                 t.cancel()
         await asyncio.gather(wait_task, watch_task, return_exceptions=True)
+
+
+@router.post(
+    "/usage",
+    status_code=204,
+    dependencies=[Depends(require_loopback), Depends(verify_bearer_token)],
+)
+async def claude_usage(payload: ClaudeUsageInput):
+    """Recebe os limites da conta (script de statusLine) e repassa ao PWA."""
+    store = claude_usage_service.store
+    should_broadcast = store.update(
+        five_hour=payload.five_hour.model_dump() if payload.five_hour else None,
+        seven_day=payload.seven_day.model_dump() if payload.seven_day else None,
+        context_pct=payload.context_pct,
+        model=payload.model,
+    )
+    if should_broadcast:
+        await manager.broadcast(store.snapshot())
+    return Response(status_code=204)
