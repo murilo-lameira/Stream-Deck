@@ -98,14 +98,21 @@ def parse_rtk(data, today: str) -> Optional[dict]:
     if isinstance(pct, bool) or not isinstance(pct, (int, float)) or not isinstance(saved, int):
         return None
     saved_today = 0
+    today_pct = None
     for day in data.get("daily") or []:
-        if isinstance(day, dict) and day.get("date") == today and isinstance(day.get("saved_tokens"), int):
+        if not isinstance(day, dict) or day.get("date") != today:
+            continue
+        if isinstance(day.get("saved_tokens"), int):
             saved_today = day["saved_tokens"]
+        day_pct = day.get("savings_pct")
+        if isinstance(day_pct, (int, float)) and not isinstance(day_pct, bool):
+            today_pct = min(100.0, max(0.0, float(day_pct)))
     commands = s.get("total_commands")
     return {
         "savings_pct": min(100.0, max(0.0, float(pct))),
         "saved_total": max(0, saved),
         "saved_today": max(0, saved_today),
+        "today_pct": today_pct,
         "commands": commands if isinstance(commands, int) else 0,
     }
 

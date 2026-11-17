@@ -39,19 +39,21 @@ RTK_JSON = {
     "summary": {"total_commands": 1313, "total_saved": 6862266, "avg_savings_pct": 94.07},
     "daily": [
         {"date": "2026-11-16", "saved_tokens": 10},
-        {"date": "2026-11-17", "saved_tokens": 120000},
+        {"date": "2026-11-17", "saved_tokens": 120000, "savings_pct": 9.4},
     ],
 }
 
 
 def test_parse_rtk_summary_and_today():
     assert acc.parse_rtk(RTK_JSON, "2026-11-17") == {
-        "savings_pct": 94.07, "saved_total": 6862266, "saved_today": 120000, "commands": 1313,
+        "savings_pct": 94.07, "saved_total": 6862266, "saved_today": 120000,
+        "today_pct": 9.4, "commands": 1313,
     }
 
 
 def test_parse_rtk_no_today_entry():
-    assert acc.parse_rtk(RTK_JSON, "2026-12-01")["saved_today"] == 0
+    r = acc.parse_rtk(RTK_JSON, "2026-12-01")
+    assert r["saved_today"] == 0 and r["today_pct"] is None
 
 
 @pytest.mark.parametrize("bad", [None, {}, {"summary": {"avg_savings_pct": "x", "total_saved": 1}}])
