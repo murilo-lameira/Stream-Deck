@@ -18,6 +18,7 @@ class UsageStore:
         seven_day: Optional[dict] = None,
         context_pct: Optional[float] = None,
         model: Optional[str] = None,
+        rtk: Optional[dict] = None,
     ) -> bool:
         """Guarda o valor novo. Retorna True se deve fazer broadcast.
 
@@ -30,12 +31,14 @@ class UsageStore:
             "seven_day": None,
             "context_pct": None,
             "model": None,
+            "rtk": None,
         })
         for key, value in (
             ("five_hour", five_hour),
             ("seven_day", seven_day),
             ("context_pct", context_pct),
             ("model", model),
+            ("rtk", rtk),
         ):
             if value is not None:
                 new[key] = value

@@ -33,10 +33,18 @@ function formatUpdated(updatedAt, now) {
   return `Atualizado há ${min} min`;
 }
 
-function Gauge({ title, windowLabel, pct, footer }) {
+function formatTokens(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '—';
+  const fmt = (v) => v.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+  if (n >= 1e6) return `${fmt(n / 1e6)} mi`;
+  if (n >= 1e3) return `${fmt(n / 1e3)} mil`;
+  return String(n);
+}
+
+function Gauge({ title, windowLabel, pct, footer, color: fixedColor, sub = 'usado' }) {
   const has = typeof pct === 'number' && Number.isFinite(pct);
   const p = has ? Math.max(0, Math.min(100, Math.round(pct))) : 0;
-  const color = ringColor(p);
+  const color = fixedColor || ringColor(p);
   const offset = CIRC * (1 - p / 100);
   return (
     <div className="usage-card">
@@ -62,7 +70,7 @@ function Gauge({ title, windowLabel, pct, footer }) {
           <span className="usage-ring-pct" style={{ color: has ? color : '#A3A29C' }}>
             {has ? `${p}%` : '—'}
           </span>
-          {has && <span className="usage-ring-sub">usado</span>}
+          {has && <span className="usage-ring-sub">{sub}</span>}
         </div>
       </div>
       <div className="usage-card-foot">
@@ -84,7 +92,7 @@ export function ClaudeUsage({ claudeUsage }) {
   const u = claudeUsage || null;
   const updatedText = u ? formatUpdated(u.updated_at, now) : null;
   const stale = u && typeof u.updated_at === 'number' && now - u.updated_at * 1000 > STALE_MS;
-  const noData = !u || (!u.five_hour && !u.seven_day && typeof u.context_pct !== 'number');
+  const noData = !u || (!u.five_hour && !u.seven_day && !u.rtk);
 
   return (
     <div className="usage-page">
@@ -132,10 +140,17 @@ export function ClaudeUsage({ claudeUsage }) {
           footer={{ label: 'Renova', value: formatReset(u?.seven_day?.resets_at, now) }}
         />
         <Gauge
-          title="Contexto"
-          windowLabel="sessão atual"
-          pct={u?.context_pct}
-          footer={{ label: 'Modelo', value: u?.model || '—' }}
+          title="RTK"
+          windowLabel="tokens economizados"
+          pct={u?.rtk?.savings_pct}
+          color="#5FB97A"
+          sub="economia"
+          footer={{
+            label: 'Poupados',
+            value: u?.rtk
+              ? `${formatTokens(u.rtk.saved_total)} · hoje ${formatTokens(u.rtk.saved_today)}`
+              : '—',
+          }}
         />
       </div>
 

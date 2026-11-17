@@ -30,6 +30,49 @@ def broadcast(monkeypatch):
     return mock
 
 
+@pytest.fixture(autouse=True)
+def no_real_rtk(monkeypatch):
+    monkeypatch.setattr(acc, "read_rtk", lambda: None)
+
+
+RTK_JSON = {
+    "summary": {"total_commands": 1313, "total_saved": 6862266, "avg_savings_pct": 94.07},
+    "daily": [
+        {"date": "2026-11-16", "saved_tokens": 10},
+        {"date": "2026-11-17", "saved_tokens": 120000},
+    ],
+}
+
+
+def test_parse_rtk_summary_and_today():
+    assert acc.parse_rtk(RTK_JSON, "2026-11-17") == {
+        "savings_pct": 94.07, "saved_total": 6862266, "saved_today": 120000, "commands": 1313,
+    }
+
+
+def test_parse_rtk_no_today_entry():
+    assert acc.parse_rtk(RTK_JSON, "2026-12-01")["saved_today"] == 0
+
+
+@pytest.mark.parametrize("bad", [None, {}, {"summary": {"avg_savings_pct": "x", "total_saved": 1}}])
+def test_parse_rtk_bad(bad):
+    assert acc.parse_rtk(bad, "2026-11-17") is None
+
+
+def test_read_rtk_missing_binary(monkeypatch):
+    monkeypatch.undo()  # desfaz o autouse para testar a funcao real
+    monkeypatch.setattr(acc, "_rtk_exe", lambda: None)
+    assert acc.read_rtk() is None
+
+
+def test_poll_once_rtk_only(monkeypatch, store, broadcast):
+    monkeypatch.setattr(acc, "read_access_token", lambda: None)
+    monkeypatch.setattr(acc, "read_rtk", lambda: {"savings_pct": 90.0, "saved_total": 5, "saved_today": 1, "commands": 2})
+    assert asyncio.run(acc.poll_once()) is True
+    assert store.snapshot()["rtk"]["savings_pct"] == 90.0
+    broadcast.assert_awaited_once()
+
+
 def test_parse_usage_converts_iso_and_pct():
     five, week = acc.parse_usage(SAMPLE)
     assert five == {"used_percentage": 63.0, "resets_at": 1794965400}

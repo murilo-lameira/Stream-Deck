@@ -180,6 +180,7 @@ export function useWebSocket(url, authToken, { onAuthRejected } = {}) {
               seven_day: data.seven_day || null,
               context_pct: typeof data.context_pct === 'number' ? data.context_pct : null,
               model: data.model || null,
+              rtk: data.rtk && typeof data.rtk === 'object' ? data.rtk : null,
               updated_at: typeof data.updated_at === 'number' ? data.updated_at : null
             });
           } else if (data.type === 'claude_permission_resolved') {

@@ -8,10 +8,12 @@ API interna e sem documentacao; qualquer falha so pula a rodada.
 import asyncio
 import json
 import logging
+import shutil
+import subprocess
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
@@ -24,6 +26,8 @@ USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
 CREDENTIALS_PATH = Path.home() / ".claude" / ".credentials.json"
 POLL_INTERVAL_S = 300
 HTTP_TIMEOUT_S = 10
+RTK_FALLBACK = r"E:\Utilitarios\rtk.exe"
+RTK_TIMEOUT_S = 10
 
 
 def read_access_token(path: Path = CREDENTIALS_PATH, now: Optional[float] = None) -> Optional[str]:
@@ -77,25 +81,77 @@ def fetch_usage(token: str, url: str = USAGE_URL, timeout: float = HTTP_TIMEOUT_
         return json.loads(resp.read().decode("utf-8"))
 
 
-async def poll_once() -> bool:
-    """Uma rodada: le, guarda e faz broadcast se preciso. True se leu algo."""
+def _rtk_exe() -> Optional[str]:
+    found = shutil.which("rtk")
+    if found:
+        return found
+    return RTK_FALLBACK if Path(RTK_FALLBACK).is_file() else None
+
+
+def parse_rtk(data, today: str) -> Optional[dict]:
+    """Resumo do `rtk gain -d -f json`: economia media, total e de hoje."""
+    if not isinstance(data, dict) or not isinstance(data.get("summary"), dict):
+        return None
+    s = data["summary"]
+    pct = s.get("avg_savings_pct")
+    saved = s.get("total_saved")
+    if isinstance(pct, bool) or not isinstance(pct, (int, float)) or not isinstance(saved, int):
+        return None
+    saved_today = 0
+    for day in data.get("daily") or []:
+        if isinstance(day, dict) and day.get("date") == today and isinstance(day.get("saved_tokens"), int):
+            saved_today = day["saved_tokens"]
+    commands = s.get("total_commands")
+    return {
+        "savings_pct": min(100.0, max(0.0, float(pct))),
+        "saved_total": max(0, saved),
+        "saved_today": max(0, saved_today),
+        "commands": commands if isinstance(commands, int) else 0,
+    }
+
+
+def read_rtk() -> Optional[dict]:
+    exe = _rtk_exe()
+    if not exe:
+        return None
+    try:
+        proc = subprocess.run(
+            [exe, "gain", "-d", "-f", "json"],
+            capture_output=True,
+            timeout=RTK_TIMEOUT_S,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        if proc.returncode != 0:
+            return None
+        return parse_rtk(json.loads(proc.stdout.decode("utf-8")), date.today().isoformat())
+    except Exception:
+        return None
+
+
+async def _read_account() -> tuple[Optional[dict], Optional[dict]]:
     token = await asyncio.to_thread(read_access_token)
     if not token:
         logger.info("Uso da conta: token do Claude Code ausente ou expirado; pulando.")
-        return False
+        return None, None
     try:
         data = await asyncio.to_thread(fetch_usage, token)
     except urllib.error.HTTPError as exc:
         logger.warning("Uso da conta: HTTP %s", exc.code)
-        return False
+        return None, None
     except Exception as exc:
         logger.warning("Uso da conta: falha %s", type(exc).__name__)
-        return False
-    five, week = parse_usage(data)
-    if five is None and week is None:
+        return None, None
+    return parse_usage(data)
+
+
+async def poll_once() -> bool:
+    """Uma rodada: le conta e RTK, guarda e faz broadcast se preciso. True se leu algo."""
+    five, week = await _read_account()
+    rtk = await asyncio.to_thread(read_rtk)
+    if five is None and week is None and rtk is None:
         return False
     store = claude_usage_service.store
-    if store.update(five_hour=five, seven_day=week):
+    if store.update(five_hour=five, seven_day=week, rtk=rtk):
         await manager.broadcast(store.snapshot())
     return True
 
