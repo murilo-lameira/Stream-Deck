@@ -111,3 +111,84 @@ async def test_hook_deny_flow(test_token, loopback_override, monkeypatch, fake_w
     r = await _flow("deny", test_token)
     assert r.status_code == 200
     assert r.json() == {"behavior": "deny"}
+
+
+class _StubRequest:
+    def __init__(self, results):
+        self._results = list(results)
+        self.calls = 0
+
+    async def is_disconnected(self):
+        self.calls += 1
+        if self._results:
+            return self._results.pop(0)
+        return False
+
+
+def _outcomes(broadcast):
+    return [
+        c.args[0]["outcome"]
+        for c in broadcast.call_args_list
+        if c.args[0]["type"] == "claude_permission_resolved"
+    ]
+
+
+@pytest.mark.asyncio
+async def test_watch_disconnect_returns_after_true(monkeypatch):
+    from routers import claude_router
+
+    real_sleep = asyncio.sleep
+
+    async def fast_sleep(_):
+        await real_sleep(0)
+
+    monkeypatch.setattr(claude_router.asyncio, "sleep", fast_sleep)
+    stub = _StubRequest([False, True])
+    await asyncio.wait_for(claude_router._watch_disconnect(stub), timeout=1)
+    assert stub.calls == 2
+
+
+@pytest.mark.asyncio
+async def test_handler_disconnect_cancels_and_returns_204(monkeypatch, fake_ws):
+    from fastapi import Response
+    from routers import claude_router
+    from schemas.deck_schemas import ClaudePermissionHookInput
+
+    broadcast = AsyncMock()
+    b = PermissionBroker(broadcast, timeout_s=30)
+    monkeypatch.setattr(claude_permission_service, "broker", b)
+    result = await asyncio.wait_for(
+        claude_router.claude_permission(
+            ClaudePermissionHookInput(tool_name="Bash"), _StubRequest([True])
+        ),
+        timeout=2,
+    )
+    assert isinstance(result, Response)
+    assert result.status_code == 204
+    assert _outcomes(broadcast) == ["cancelled"]
+    assert b._pending == {}
+
+
+@pytest.mark.asyncio
+async def test_handler_task_cancelled_broadcasts_cancelled(monkeypatch, fake_ws):
+    from routers import claude_router
+    from schemas.deck_schemas import ClaudePermissionHookInput
+
+    broadcast = AsyncMock()
+    b = PermissionBroker(broadcast, timeout_s=30)
+    monkeypatch.setattr(claude_permission_service, "broker", b)
+    task = asyncio.create_task(
+        claude_router.claude_permission(
+            ClaudePermissionHookInput(tool_name="Bash"), _StubRequest([])
+        )
+    )
+    for _ in range(200):
+        if b._pending:
+            break
+        await asyncio.sleep(0.005)
+    assert b._pending
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert _outcomes(broadcast) == ["cancelled"]
+    assert b._pending == {}
