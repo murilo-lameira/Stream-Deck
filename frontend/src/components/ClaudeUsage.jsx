@@ -141,15 +141,13 @@ export function ClaudeUsage({ claudeUsage }) {
         />
         <Gauge
           title="RTK"
-          windowLabel="tokens economizados"
+          windowLabel={u?.rtk ? `${formatTokens(u.rtk.saved_total)} poupados` : 'tokens poupados'}
           pct={u?.rtk?.savings_pct}
           color="#5FB97A"
           sub="economia"
           footer={{
-            label: 'Poupados',
-            value: u?.rtk
-              ? `${formatTokens(u.rtk.saved_total)} · hoje ${formatTokens(u.rtk.saved_today)}`
-              : '—',
+            label: 'Hoje',
+            value: u?.rtk ? formatTokens(u.rtk.saved_today) : '—',
           }}
         />
       </div>
