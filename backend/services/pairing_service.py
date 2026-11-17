@@ -93,7 +93,6 @@ class PairingService:
             wait = (min(expiries) - now) if expiries else self.REQUEST_COOLDOWN_S
             return 429, self._retry(wait)
 
-        self._last_request[client_ip] = now
         for pid in [p for p, v in self._pending.items() if v.ip == client_ip]:
             del self._pending[pid]
 
@@ -107,10 +106,11 @@ class PairingService:
                 ok = False
         finally:
             self._in_flight.discard(client_ip)
+        now = self._clock()
+        self._last_request[client_ip] = now
         if not ok:
             return 503, dict(_NOTIFY_FAIL)
 
-        now = self._clock()
         remaining = self._lock_remaining(now)
         if remaining > 0:
             return 423, self._retry(remaining)

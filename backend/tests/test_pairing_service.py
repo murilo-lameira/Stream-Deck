@@ -194,9 +194,11 @@ async def test_code_not_in_any_response(svc, notify, clock, monkeypatch):
 async def test_max_active_429_does_not_start_cooldown(svc, notify, clock):
     for ip in ("1.1.1.1", "2.2.2.2", "3.3.3.3"):
         await make_request(svc, notify, ip)
+    clock.advance(115)
     status, body = await svc.request("4.4.4.4")
     assert status == 429
-    clock.advance(body["retry_after"])
+    assert body["retry_after"] < svc.REQUEST_COOLDOWN_S
+    clock.advance(body["retry_after"] + 1)
     assert (await svc.request("4.4.4.4"))[0] == 200
 
 
