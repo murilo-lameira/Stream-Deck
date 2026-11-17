@@ -15,7 +15,7 @@ def test_websocket_auth_invalid_token(test_client):
         with test_client.websocket_connect("/ws") as ws:
             ws.send_json({"auth_token": "token_errado_invalido"})
             ws.receive_json()
-    assert exc_info.value.code == 1008
+    assert exc_info.value.code == 4401
 
 def test_websocket_auth_malformed_payload(test_client):
     with pytest.raises(WebSocketDisconnect) as exc_info:

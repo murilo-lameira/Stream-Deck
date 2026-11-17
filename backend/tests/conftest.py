@@ -42,3 +42,12 @@ def loopback_override():
     app.dependency_overrides[require_loopback] = lambda: None
     yield
     app.dependency_overrides.pop(require_loopback, None)
+
+
+@pytest.fixture
+def lan_override():
+    from main import app
+    from routers.security_deps import require_lan
+    app.dependency_overrides[require_lan] = lambda: None
+    yield
+    app.dependency_overrides.pop(require_lan, None)

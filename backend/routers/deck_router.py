@@ -342,10 +342,10 @@ async def websocket_endpoint(websocket: WebSocket):
         auth_data = AuthPayload.model_validate(raw_auth)
 
         if not is_valid_token(auth_data.auth_token):
-            logger.warning(f"Falha de autenticacao de {client_ip}. Fechando conexao (1008).")
+            logger.warning(f"Falha de autenticacao de {client_ip}. Fechando conexao (4401).")
             await websocket.close(
-                code=status.WS_1008_POLICY_VIOLATION,
-                reason="Token de autenticacao invalido ou ausente."
+                code=4401,
+                reason="Token de autenticacao invalido"
             )
             return
 
