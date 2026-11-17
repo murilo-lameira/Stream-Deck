@@ -59,3 +59,8 @@ class ClaudePermissionHookInput(BaseModel):
     tool_input: Dict[str, Any] = Field(default_factory=dict)
     cwd: str = ""
     session_id: Optional[str] = None
+
+
+class PairConfirmInput(BaseModel):
+    pair_id: str = Field(max_length=64)
+    code: str = Field(pattern=r"^\d{4}$")

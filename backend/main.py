@@ -23,6 +23,7 @@ from services.telemetry_service import system_telemetry_loop
 from services.auth_service import generate_pairing_url
 from routers.deck_router import router as deck_router, verify_bearer_token
 from routers.claude_router import router as claude_router
+from routers.pairing_router import router as pairing_router
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -91,6 +92,7 @@ app.add_middleware(
 # Rotas do Stream Deck
 app.include_router(deck_router)
 app.include_router(claude_router)
+app.include_router(pairing_router)
 
 @app.get("/api/health")
 async def health():
