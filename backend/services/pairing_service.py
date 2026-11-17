@@ -50,6 +50,7 @@ class PairingService:
         self._token_provider = token_provider
         self._pending: dict[str, _Pending] = {}
         self._last_request: dict[str, float] = {}
+        self._in_flight: set[str] = set()
         self._wrong_times: list[float] = []
         self._locked_until = 0.0
 
@@ -68,6 +69,11 @@ class PairingService:
             del self._pending[pid]
 
     async def request(self, client_ip: str) -> tuple[int, dict]:
+        status, body = await self._request(client_ip)
+        logger.info("pedido de pareamento de %s: %s", client_ip, status)
+        return status, body
+
+    async def _request(self, client_ip: str) -> tuple[int, dict]:
         now = self._clock()
         remaining = self._lock_remaining(now)
         if remaining > 0:
@@ -76,30 +82,48 @@ class PairingService:
         last = self._last_request.get(client_ip)
         if last is not None and now - last < self.REQUEST_COOLDOWN_S:
             return 429, self._retry(self.REQUEST_COOLDOWN_S - (now - last))
-        self._last_request[client_ip] = now
+        if client_ip in self._in_flight:
+            return 429, self._retry(self.REQUEST_COOLDOWN_S)
 
         self._purge(now)
-        others = [v for v in self._pending.values() if v.ip != client_ip]
-        if len(others) >= self.MAX_ACTIVE:
-            return 429, self._retry(min(v.expires_at for v in others) - now)
+        other_ips = {v.ip for v in self._pending.values() if v.ip != client_ip}
+        other_ips |= self._in_flight - {client_ip}
+        if len(other_ips) >= self.MAX_ACTIVE:
+            expiries = [v.expires_at for v in self._pending.values() if v.ip != client_ip]
+            wait = (min(expiries) - now) if expiries else self.REQUEST_COOLDOWN_S
+            return 429, self._retry(wait)
 
+        self._last_request[client_ip] = now
         for pid in [p for p, v in self._pending.items() if v.ip == client_ip]:
             del self._pending[pid]
 
         code = f"{secrets.randbelow(10000):04d}"
+        self._in_flight.add(client_ip)
         try:
-            ok = await asyncio.to_thread(self.notify, code, client_ip)
-        except Exception as exc:
-            logger.warning("Falha no notifier de pareamento: %s", type(exc).__name__)
-            ok = False
+            try:
+                ok = await asyncio.to_thread(self.notify, code, client_ip)
+            except Exception as exc:
+                logger.warning("Falha no notifier de pareamento: %s", type(exc).__name__)
+                ok = False
+        finally:
+            self._in_flight.discard(client_ip)
         if not ok:
             return 503, dict(_NOTIFY_FAIL)
 
+        now = self._clock()
+        remaining = self._lock_remaining(now)
+        if remaining > 0:
+            return 423, self._retry(remaining)
         pair_id = secrets.token_urlsafe(16)
         self._pending[pair_id] = _Pending(client_ip, _hash(code), now + self.CODE_TTL_S)
         return 200, {"pair_id": pair_id, "expires_in": self.CODE_TTL_S}
 
     def confirm(self, pair_id: str, code: str, client_ip: str) -> tuple[int, dict]:
+        status, body = self._confirm(pair_id, code, client_ip)
+        logger.info("confirmacao de pareamento de %s: %s", client_ip, status)
+        return status, body
+
+    def _confirm(self, pair_id: str, code: str, client_ip: str) -> tuple[int, dict]:
         now = self._clock()
         remaining = self._lock_remaining(now)
         if remaining > 0:
