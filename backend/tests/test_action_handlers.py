@@ -166,6 +166,7 @@ async def test_permission_response_unknown_id(monkeypatch):
     args = mock_ws.send_json.call_args[0][0]
     assert args["status"] == "error"
     assert args["message"] == "Pedido expirado"
+    assert args["request_id"] == "zzz"
 
 
 @pytest.mark.asyncio
@@ -176,7 +177,20 @@ async def test_permission_response_missing_fields(monkeypatch):
     monkeypatch.setattr(claude_permission_service, "broker", broker)
     await handle_claude_permission_response(mock_ws, DeckActionPayload(action="claude_permission_response"))
     assert mock_ws.send_json.call_args[0][0]["message"] == "Pedido invalido."
+    assert mock_ws.send_json.call_args[0][0]["request_id"] is None
     broker.resolve.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_permission_response_missing_decision_keeps_request_id(monkeypatch):
+    mock_ws = AsyncMock()
+    broker = MagicMock()
+    broker.resolve = AsyncMock(return_value=True)
+    monkeypatch.setattr(claude_permission_service, "broker", broker)
+    await handle_claude_permission_response(
+        mock_ws, DeckActionPayload(action="claude_permission_response", request_id="r9")
+    )
+    assert mock_ws.send_json.call_args[0][0]["request_id"] == "r9"
 
 
 def test_permission_response_invalid_decision():

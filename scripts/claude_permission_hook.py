@@ -67,7 +67,9 @@ def request_decision(
                 "Authorization": f"Bearer {token}",
             },
         )
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        # Ignora proxies de sistema/ambiente: o backend e sempre local.
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(req, timeout=timeout) as resp:
             if resp.status != 200:
                 return None
             data = json.loads(resp.read().decode("utf-8"))

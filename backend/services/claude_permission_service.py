@@ -1,6 +1,7 @@
 import asyncio
 import json
 import math
+import re
 import secrets
 import logging
 import time
@@ -15,8 +16,17 @@ SUMMARY_MAX = 300
 Decision = Literal["allow", "deny"]
 
 
-def summarize(tool_name: str, tool_input: dict) -> str:
-    """Resume a chamada de ferramenta para exibir no celular (max 300 chars)."""
+# Controles bidi (U+202A-202E, U+2066-2069) e C0 exceto LF e TAB: trocados por U+FFFD.
+_UNSAFE_CHARS = re.compile(
+    "[" + chr(0x202A) + "-" + chr(0x202E) + chr(0x2066) + "-" + chr(0x2069)
+    + chr(0x00) + "-" + chr(0x08) + chr(0x0B) + "-" + chr(0x1F) + "]"
+)
+REPLACEMENT_CHAR = chr(0xFFFD)
+ELLIPSIS = chr(0x2026)
+
+
+def summarize_full(tool_name: str, tool_input: dict) -> tuple[str, bool, int]:
+    """Devolve (resumo exibivel, truncado, tamanho do resumo completo sanitizado)."""
     tool_input = tool_input or {}
     if tool_name == "Bash":
         text = str(tool_input.get("command", ""))
@@ -24,7 +34,16 @@ def summarize(tool_name: str, tool_input: dict) -> str:
         text = str(tool_input.get("file_path", ""))
     else:
         text = json.dumps(tool_input, ensure_ascii=False, separators=(",", ":"))
-    return text[:SUMMARY_MAX]
+    text = _UNSAFE_CHARS.sub(REPLACEMENT_CHAR, text)
+    length = len(text)
+    if length > SUMMARY_MAX:
+        return text[: SUMMARY_MAX - 1] + ELLIPSIS, True, length
+    return text, False, length
+
+
+def summarize(tool_name: str, tool_input: dict) -> str:
+    """Resume a chamada de ferramenta para exibir no celular (max 300 chars)."""
+    return summarize_full(tool_name, tool_input)[0]
 
 
 def _project_name(cwd: str) -> str:
@@ -38,6 +57,8 @@ class _Pending:
     summary: str
     project: str
     deadline: float
+    truncated: bool = False
+    summary_length: int = 0
     future: asyncio.Future = field(default_factory=lambda: asyncio.get_running_loop().create_future())
 
 
@@ -60,6 +81,8 @@ class PermissionBroker:
             "request_id": request_id,
             "tool_name": p.tool_name,
             "summary": p.summary,
+            "truncated": p.truncated,
+            "summary_length": p.summary_length,
             "project": p.project,
             "expires_in": math.ceil(remaining),
         }
@@ -88,11 +111,14 @@ class PermissionBroker:
         if len(self._pending) >= self._max_pending:
             return None
         request_id = secrets.token_urlsafe(16)
+        summary, truncated, summary_length = summarize_full(tool_name, tool_input)
         pending = _Pending(
             tool_name=tool_name,
-            summary=summarize(tool_name, tool_input),
+            summary=summary,
             project=_project_name(cwd),
             deadline=time.monotonic() + self._timeout_s,
+            truncated=truncated,
+            summary_length=summary_length,
         )
         self._pending[request_id] = pending
         await self._broadcast(self._request_message(request_id, pending))

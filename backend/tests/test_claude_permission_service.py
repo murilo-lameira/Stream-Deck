@@ -190,3 +190,44 @@ async def test_expired_unawaited_is_purged_with_broadcast():
     assert new is not None
     outcomes = [c.args[0] for c in bc.await_args_list if c.args[0]["type"] == "claude_permission_resolved"]
     assert outcomes == [{"type": "claude_permission_resolved", "request_id": rid, "outcome": "expired"}]
+
+
+def test_summarize_truncated_ends_with_ellipsis():
+    out = summarize("Bash", {"command": "x" * 1000})
+    assert len(out) == 300
+    assert out.endswith(chr(0x2026))
+    assert out[:299] == "x" * 299
+
+
+def test_summarize_exactly_300_not_truncated():
+    assert summarize("Bash", {"command": "a" * 300}) == "a" * 300
+
+
+def test_summarize_strips_bidi_and_c0_controls():
+    bad = [0x202E, 0x2066, 0x2069, 0x00, 0x07, 0x1B]
+    cmd = "ls" + "".join(chr(c) for c in bad) + "ok" + chr(10) + chr(9) + "end"
+    out = summarize("Bash", {"command": cmd})
+    for c in bad:
+        assert chr(c) not in out
+    assert out == "ls" + chr(0xFFFD) * len(bad) + "ok" + chr(10) + chr(9) + "end"
+
+
+@pytest.mark.asyncio
+async def test_request_message_truncated_fields():
+    bc = AsyncMock()
+    broker = PermissionBroker(bc)
+    await broker.submit("Bash", {"command": "x" * 1000}, "F:/p")
+    msg = bc.await_args.args[0]
+    assert msg["truncated"] is True
+    assert msg["summary_length"] == 1000
+    assert len(msg["summary"]) == 300
+
+
+@pytest.mark.asyncio
+async def test_request_message_short_not_truncated():
+    bc = AsyncMock()
+    broker = PermissionBroker(bc)
+    await broker.submit("Bash", {"command": "ls"}, "F:/p")
+    msg = bc.await_args.args[0]
+    assert msg["truncated"] is False
+    assert msg["summary_length"] == 2

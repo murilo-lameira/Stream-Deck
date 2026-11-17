@@ -280,11 +280,17 @@ async def handle_ping_action(websocket: WebSocket, command: DeckActionPayload) -
 
 async def handle_claude_permission_response(websocket: WebSocket, command: DeckActionPayload) -> None:
     if not command.request_id or not command.decision:
-        await websocket.send_json({"type": "action_result", "status": "error", "message": "Pedido invalido."})
+        await websocket.send_json({
+            "type": "action_result", "status": "error",
+            "message": "Pedido invalido.", "request_id": command.request_id or None,
+        })
         return
     resolved = await claude_permission_service.broker.resolve(command.request_id, command.decision)
     if not resolved:
-        await websocket.send_json({"type": "action_result", "status": "error", "message": "Pedido expirado"})
+        await websocket.send_json({
+            "type": "action_result", "status": "error",
+            "message": "Pedido expirado", "request_id": command.request_id,
+        })
 
 ACTION_HANDLERS: Dict[str, Callable[[WebSocket, DeckActionPayload], Coroutine[Any, Any, None]]] = {
     "open": handle_open_action,
