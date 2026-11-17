@@ -6,6 +6,8 @@ pycaw
 comtypes
 winrt-Windows.Media.Control
 winrt-Windows.Storage.Streams
+winrt-Windows.UI.Notifications==3.2.1
+winrt-Windows.Data.Xml.Dom==3.2.1
 zeroconf
 psutil>=5.9.0
 pytest>=8.0.0
