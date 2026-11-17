@@ -68,6 +68,11 @@ export function App() {
     return saved !== null ? saved === 'dark' : true;
   });
 
+  const clearToken = () => {
+    localStorage.removeItem(STORAGE_KEY_TOKEN);
+    setAuthToken('');
+  };
+
   const { 
     status, 
     lastMessage, 
@@ -83,7 +88,8 @@ export function App() {
     respondPermission
   } = useWebSocket(
     wsUrl,
-    authToken
+    authToken,
+    { onAuthRejected: clearToken }
   );
 
   const showToast = (message, type = 'info') => {
@@ -147,12 +153,15 @@ export function App() {
     executeLaunch('shutdown_pc');
   };
 
-  const handleSaveSettings = ({ url, token }) => {
+  const handleSaveSettings = ({ url }) => {
     setWsUrl(url);
-    setAuthToken(token);
     localStorage.setItem(STORAGE_KEY_SERVER, url);
-    localStorage.setItem(STORAGE_KEY_TOKEN, token);
     showToast('Configurações salvas. Reconectando...', 'info');
+  };
+
+  const handleRepair = () => {
+    clearToken();
+    showToast('Pareamento apagado.', 'info');
   };
 
   const toggleTheme = () => {
@@ -191,10 +200,8 @@ export function App() {
     lastTapRef.current = now;
   };
 
-  // Se o computador estiver desligado (RECONNECTING), mantem a tela 100% preta (OLED Blackout) sem piscar
   // Se o computador estiver desligado (RECONNECTING), mantem a tela 100% preta (OLED Blackout) com dica sutil
-  if (isBlackout) {
-    return (
+  const content = isBlackout ? (
       <div 
         style={{ 
           width: '100vw', 
@@ -218,19 +225,9 @@ export function App() {
           Conectando a {wsUrl}<br />
           <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Toque 2x na tela para alterar IP</span>
         </div>
-
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          currentUrl={wsUrl}
-          currentAuthToken={authToken}
-          onSave={handleSaveSettings}
-        />
       </div>
-    );
-  }
+  ) : (
 
-  return (
     <div className={`app-container ${isDarkMode ? 'theme-dark' : ''}`}>
       <Header 
         status={status} 
@@ -272,14 +269,6 @@ export function App() {
         </div>
       )}
 
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        currentUrl={wsUrl}
-        currentAuthToken={authToken}
-        onSave={handleSaveSettings}
-      />
-
       <ConfirmModal
         isOpen={pendingShutdown}
         title="Desligar o PC?"
@@ -298,6 +287,19 @@ export function App() {
         />
       )}
     </div>
+  );
+
+  return (
+    <>
+      {content}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        currentUrl={wsUrl}
+        onSave={handleSaveSettings}
+        onRepair={handleRepair}
+      />
+    </>
   );
 }
 

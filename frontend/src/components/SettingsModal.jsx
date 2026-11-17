@@ -1,61 +1,37 @@
-import React, { useState } from 'react';
-import { X, Save, RotateCcw, Shield, Server, Copy, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Save, RotateCcw, Server, Link2 } from 'lucide-react';
 import { getDefaultWebSocketUrl } from '../config/constants';
 
 export function SettingsModal({
   isOpen,
   onClose,
   currentUrl,
-  currentAuthToken,
   onSave,
+  onRepair,
 }) {
   const [url, setUrl] = useState(currentUrl);
-  const [token, setToken] = useState(currentAuthToken);
-  const [copied, setCopied] = useState(false);
+
+  // Ressincroniza a URL com o valor salvo a cada abertura do modal
+  useEffect(() => {
+    if (isOpen) setUrl(currentUrl);
+  }, [isOpen, currentUrl]);
 
   if (!isOpen) return null;
 
   const handleSave = (e) => {
     e.preventDefault();
-    onSave({ url, token });
+    onSave({ url });
     onClose();
   };
 
   const handleReset = () => {
     setUrl(getDefaultWebSocketUrl());
-    setToken('');
   };
 
-  const handleCopyPairingLink = async () => {
-    let host = window.location.host;
-    try {
-      if (url) {
-        const wsParsed = new URL(url.replace('ws://', 'http://').replace('wss://', 'https://'));
-        if (wsParsed.hostname && wsParsed.hostname !== 'localhost' && wsParsed.hostname !== '127.0.0.1') {
-          host = wsParsed.host;
-        }
-      }
-    } catch {}
-
-    const protocol = window.location.protocol || 'http:';
-    const pairingUrl = `${protocol}//${host}/?token=${encodeURIComponent(token)}`;
-
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(pairingUrl);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = pairingUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    } catch (err) {
-      console.error('Falha ao copiar link de conexão mobile:', err);
-    }
+  const handleRepair = () => {
+    if (url !== currentUrl) onSave({ url });
+    onRepair();
+    onClose();
   };
 
   return (
@@ -89,35 +65,12 @@ export function SettingsModal({
             </span>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="auth-token">
-              <Shield size={16} /> Token de Autenticação
-            </label>
-            <input
-              id="auth-token"
-              type="text"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Token de segurança (.env)"
-              required
-            />
-            <span className="form-hint">
-              Deve ser idêntico ao <code>AUTH_TOKEN</code> no arquivo <code>backend/.env</code>.
-            </span>
-          </div>
-
           <div className="pairing-shortcut-box">
-            <button
-              type="button"
-              className={`btn-copy-link ${copied ? 'copied' : ''}`}
-              onClick={handleCopyPairingLink}
-              title="Copiar link com token embutido para parear o Xiaomi Mi 9 rapidamente"
-            >
-              {copied ? <Check size={16} /> : <Copy size={16} />}
-              <span>{copied ? 'Link de Conexão Copiado!' : 'Copiar Link de Conexão'}</span>
+            <button type="button" className="btn-secondary" onClick={handleRepair}>
+              <Link2 size={16} /> Parear de novo
             </button>
             <span className="form-hint">
-              Abra este link no Mi 9 para conectar e autenticar com um toque.
+              Apaga o pareamento deste aparelho e pede um novo código do PC.
             </span>
           </div>
 

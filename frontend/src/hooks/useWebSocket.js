@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { hapticFeedback } from '../utils/haptics';
 
-export function useWebSocket(url, authToken) {
+export function useWebSocket(url, authToken, { onAuthRejected } = {}) {
   const [status, setStatus] = useState('CONNECTING'); // 'CONNECTING' | 'CONNECTED' | 'AUTHENTICATED' | 'RECONNECTING' | 'ERROR'
   const [lastMessage, setLastMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -34,6 +34,10 @@ export function useWebSocket(url, authToken) {
   };
 
   const connectRef = useRef(null);
+  const onAuthRejectedRef = useRef(onAuthRejected);
+  useEffect(() => {
+    onAuthRejectedRef.current = onAuthRejected;
+  }, [onAuthRejected]);
 
   const scheduleReconnect = useCallback(() => {
     clearReconnectTimer();
@@ -185,12 +189,11 @@ export function useWebSocket(url, authToken) {
         if (isUnmountedRef.current) return;
         clearHeartbeatTimer();
         
-        if (event.code === 1008) {
+        if (event.code === 4401) {
+          // Token recusado: so um novo pareamento corrige, entao nao reconecta
           setStatus('ERROR');
-          setErrorMessage('Token de autenticacao invalido ou rejeitado pelo servidor (Codigo 1008).');
-          reconnectTimerRef.current = setTimeout(() => {
-            if (!isUnmountedRef.current) scheduleReconnect();
-          }, 5000);
+          setErrorMessage('Pareamento recusado pelo servidor.');
+          if (onAuthRejectedRef.current) onAuthRejectedRef.current();
         } else {
           setErrorMessage('Conexao perdida com o computador.');
           scheduleReconnect();
