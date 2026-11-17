@@ -4,6 +4,7 @@ import { DeckSwiper } from './components/DeckSwiper';
 import { SettingsModal } from './components/SettingsModal';
 import { ConfirmModal } from './components/ConfirmModal';
 import { ClaudePermissionModal } from './components/ClaudePermissionModal';
+import { PairingScreen } from './components/PairingScreen';
 import { 
   getDefaultWebSocketUrl, 
   STORAGE_KEY_TOKEN, 
@@ -159,6 +160,12 @@ export function App() {
     showToast('Configurações salvas. Reconectando...', 'info');
   };
 
+  const handlePaired = (token) => {
+    localStorage.setItem(STORAGE_KEY_TOKEN, token);
+    setAuthToken(token);
+    showToast('Pareado!', 'success');
+  };
+
   const handleRepair = () => {
     clearToken();
     showToast('Pareamento apagado.', 'info');
@@ -201,7 +208,20 @@ export function App() {
   };
 
   // Se o computador estiver desligado (RECONNECTING), mantem a tela 100% preta (OLED Blackout) com dica sutil
-  const content = isBlackout ? (
+  const content = !authToken ? (
+    <div className={`app-container ${isDarkMode ? 'theme-dark' : ''}`}>
+      <PairingScreen
+        wsUrl={wsUrl}
+        onPaired={handlePaired}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
+      {toast && (
+        <div className={`toast-notification toast-${toast.type}`}>
+          <span>{toast.message}</span>
+        </div>
+      )}
+    </div>
+  ) : isBlackout ? (
       <div 
         style={{ 
           width: '100vw', 

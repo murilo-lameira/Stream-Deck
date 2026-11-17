@@ -1070,3 +1070,90 @@
 .claude-perm-allow {
   background: #16a34a;
 }
+
+/* ==========================================
+   Pairing Screen
+   ========================================== */
+.pairing-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #000000;
+  color: #f1f5f9;
+}
+
+.pairing-card {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.pairing-icon { color: #22d3ee; }
+.pairing-title { font-size: 1.3rem; font-weight: 800; margin: 0; }
+.pairing-hint { margin: 0; font-size: 0.9rem; color: rgba(241, 245, 249, 0.7); }
+.pairing-hint-small { font-size: 0.78rem; color: rgba(241, 245, 249, 0.5); }
+
+.pairing-btn-primary,
+.pairing-btn-secondary {
+  min-height: 52px;
+  width: 100%;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(34, 211, 238, 0.5);
+}
+
+.pairing-btn-primary { background: #0891b2; color: #ffffff; }
+.pairing-btn-secondary { background: transparent; color: #22d3ee; }
+.pairing-btn-primary:disabled,
+.pairing-btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.pairing-digits { display: flex; gap: 10px; justify-content: center; }
+
+.pairing-digit {
+  width: 56px;
+  height: 64px;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  background: #0b0f14;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  caret-color: #22d3ee;
+}
+
+.pairing-digit:focus { outline: none; border-color: #22d3ee; }
+.pairing-digit:disabled { opacity: 0.5; }
+
+.pairing-countdown {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #22d3ee;
+}
+
+.pairing-message { min-height: 1.3em; font-size: 0.85rem; color: #fca5a5; }
+
+.pairing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 16px;
+  background: none;
+  border: none;
+  color: rgba(241, 245, 249, 0.5);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
