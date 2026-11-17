@@ -4,8 +4,9 @@ websockets>=13.0
 python-dotenv>=1.0.0
 pycaw
 comtypes
-winrt-Windows.Media.Control
-winrt-Windows.Storage.Streams
+winrt-runtime==3.2.1
+winrt-Windows.Media.Control==3.2.1
+winrt-Windows.Storage.Streams==3.2.1
 winrt-Windows.UI.Notifications==3.2.1
 winrt-Windows.Data.Xml.Dom==3.2.1
 zeroconf
