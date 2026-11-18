@@ -19,11 +19,23 @@ Para gerenciar a complexidade e estruturar todas as etapas do desenvolvimento, u
 </div>
 <br>
 
-<!-- Espaço para a foto do projeto -->
-![Foto do Projeto](docs/images/image-2.png)
+<p align="center">
+  <img src="docs/images/tour.gif" alt="Tour pela interface: limites do Claude, grade de aplicativos, mídia e volume por processo" width="900" />
+  <br><em>Tour pela interface: limites do Claude, aplicativos, mídia e volume por processo</em>
+</p>
 
-![Print do projeto](docs/images/image.png)
-![printo 2 do projeto](docs/images/image-1.png)
+<p align="center">
+  <img src="docs/images/image-2.png" alt="Xiaomi Mi 9 no suporte exibindo a grade do Stream Deck" width="440" />
+  <img src="docs/images/pedido-claude.gif" alt="O Claude Code pede permissão e o pedido é aprovado pelo celular" width="440" />
+  <br><em>O Mi 9 na mesa | O Claude Code pede permissão e o celular aprova</em>
+</p>
+
+<p align="center">
+  <img src="docs/images/deck.png" alt="Grade de aplicativos" width="440" />
+  <img src="docs/images/limites-claude.png" alt="Painel de limites da conta do Claude Code" width="440" />
+</p>
+
+Vídeos em alta resolução no [portfólio](https://murilo-lameira.github.io/#projetos).
 
 
 Abaixo, apresentamos um resumo **extremamente detalhado** da arquitetura, regras de negócio e implementação final do sistema.
