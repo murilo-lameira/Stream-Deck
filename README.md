@@ -25,9 +25,8 @@ Para gerenciar a complexidade e estruturar todas as etapas do desenvolvimento, u
 </p>
 
 <p align="center">
-  <img src="docs/images/image-2.png" alt="Xiaomi Mi 9 no suporte exibindo a grade do Stream Deck" width="440" />
-  <img src="docs/images/pedido-claude.gif" alt="O Claude Code pede permissão e o pedido é aprovado pelo celular" width="440" />
-  <br><em>O Mi 9 na mesa | O Claude Code pede permissão e o celular aprova</em>
+  <img src="docs/images/pedido-claude.gif" alt="O Claude Code pede permissão e o pedido é aprovado pelo celular" width="900" />
+  <br><em>O Claude Code pede permissão e o celular aprova</em>
 </p>
 
 <p align="center">
