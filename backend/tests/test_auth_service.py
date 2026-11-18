@@ -75,3 +75,27 @@ def test_endpoint_rotate_pairing_token_authorized(test_client, test_token, monke
 
     # Reverte para manter os testes limpos
     monkeypatch.setenv("AUTH_TOKEN", test_token)
+
+
+def test_get_auth_token_reads_dotenv_when_env_missing(tmp_path, monkeypatch):
+    """Regressao: sem AUTH_TOKEN no ambiente (import antes do load_dotenv), o token do .env
+    deve ser reaproveitado, sem gerar outro nem reescrever o arquivo."""
+    from services import auth_service
+    env = tmp_path / ".env"
+    env.write_text("HOST=0.0.0.0\nAUTH_TOKEN=token-existente-123\n", encoding="utf-8")
+    before = env.read_bytes()
+    monkeypatch.setattr(auth_service, "_get_dotenv_path", lambda: str(env))
+    monkeypatch.delenv("AUTH_TOKEN", raising=False)
+    assert auth_service.get_auth_token() == "token-existente-123"
+    assert env.read_bytes() == before
+
+
+def test_get_auth_token_generates_when_dotenv_has_none(tmp_path, monkeypatch):
+    from services import auth_service
+    env = tmp_path / ".env"
+    env.write_text("HOST=0.0.0.0\n", encoding="utf-8")
+    monkeypatch.setattr(auth_service, "_get_dotenv_path", lambda: str(env))
+    monkeypatch.delenv("AUTH_TOKEN", raising=False)
+    tok = auth_service.get_auth_token()
+    assert tok and tok != auth_service.DEFAULT_INSECURE_TOKEN
+    assert f"AUTH_TOKEN={tok}" in env.read_text(encoding="utf-8")

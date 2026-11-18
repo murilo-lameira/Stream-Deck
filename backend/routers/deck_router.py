@@ -22,9 +22,6 @@ from schemas.deck_schemas import AuthPayload, DeckActionPayload, TriggerPayload
 logger = logging.getLogger("streamdeck.router")
 router = APIRouter()
 
-# Mantém referência compatível inicializada dinamicamente
-AUTH_TOKEN = get_auth_token()
-
 def verify_bearer_token(authorization: Optional[str] = Header(None)) -> bool:
     """Verifica autenticação via Bearer token no cabeçalho Authorization."""
     if not authorization:

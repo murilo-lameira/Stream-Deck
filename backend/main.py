@@ -13,6 +13,14 @@ from logging.handlers import RotatingFileHandler
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
+
+# Carrega o .env ANTES de importar routers/serviços: eles leem AUTH_TOKEN na importação
+# (prioriza backend/.env se existir, com fallback para .env da raiz).
+backend_env = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.isfile(backend_env):
+    load_dotenv(backend_env)
+load_dotenv()
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -30,12 +38,6 @@ if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-
-# Carrega variáveis de ambiente (prioriza backend/.env se existir, com fallback para .env da raiz)
-backend_env = os.path.join(os.path.dirname(__file__), ".env")
-if os.path.isfile(backend_env):
-    load_dotenv(backend_env)
-load_dotenv()
 
 # Nome amigável na janela de console no Windows
 if os.name == 'nt':

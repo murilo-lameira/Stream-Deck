@@ -11,6 +11,19 @@ DEFAULT_INSECURE_TOKEN = "mi9_deck_secret_2026"
 def _get_dotenv_path() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
+def _read_token_from_dotenv() -> Optional[str]:
+    try:
+        with open(_get_dotenv_path(), "r", encoding="utf-8-sig") as f:
+            for line in f:
+                key, sep, value = line.strip().partition("=")
+                if sep and key.strip() == "AUTH_TOKEN":
+                    value = value.strip().strip("'\"")
+                    return value or None
+    except OSError:
+        pass
+    return None
+
+
 def _persist_token_to_dotenv(token: str) -> None:
     env_path = _get_dotenv_path()
     try:
@@ -57,6 +70,12 @@ def get_auth_token() -> str:
     gera automaticamente um novo token criptográfico seguro e persiste no .env.
     """
     token = os.getenv("AUTH_TOKEN")
+    if not token:
+        # .env ainda não carregado neste processo: lê dele antes de cogitar gerar outro,
+        # senão cada reinício trocaria o token e todos os aparelhos teriam de parear de novo.
+        token = _read_token_from_dotenv()
+        if token:
+            os.environ["AUTH_TOKEN"] = token
     if not token or token == DEFAULT_INSECURE_TOKEN:
         return rotate_token()
     return token
